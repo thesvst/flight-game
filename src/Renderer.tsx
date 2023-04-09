@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import { Plane } from '@core';
 import { ThreeJSManager } from '@core';
 import { BasicPlane } from '@planes';
+import { HeadsUp } from '@components';
+import styled from 'styled-components';
 
 export const Renderer = () => {
   const ThreeJSRef = useRef<ThreeJSManager>();
@@ -42,5 +44,21 @@ export const Renderer = () => {
     window.addEventListener('resize', () => ThreeJSRef.current?._onWindowResize());
   }, []);
 
-  return <div></div>;
+  return (
+    <div>
+      <HeadsUpWrapper>
+        <HeadsUp />
+      </HeadsUpWrapper>
+    </div>
+  );
 };
+
+const HeadsUpWrapper = styled('div')`
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  z-index: 100;
+  width: 300px;
+  backdrop-filter: blur(5px);
+  border: 1px solid #ccc;
+`;

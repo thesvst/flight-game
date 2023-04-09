@@ -46,7 +46,11 @@ export class ThreeJSManager {
   private _initialize() {
     this._setRendererSize();
     this._scene.add(this._light);
-    document.body.appendChild(this._renderer.domElement);
+    const domElement = this._renderer.domElement;
+    domElement.style.position = 'absolute';
+    domElement.style.left = '0';
+    domElement.style.top = '0';
+    document.body.appendChild(domElement);
     this._camera.position.set(0, -2, -35);
     this._camera.lookAt(0, 0, 0);
   }
