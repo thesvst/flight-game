@@ -2,7 +2,11 @@
   "compilerOptions": {
     "target": "ESNext",
     "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
     "allowJs": false,
     "skipLibCheck": true,
     "esModuleInterop": false,
@@ -10,12 +14,45 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
+    "baseUrl": "./",
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "paths": {
+      "@core": [
+        "src/core"
+      ],
+      "@planes": [
+        "src/planes"
+      ],
+      "@providers": [
+        "src/providers"
+      ],
+      "@": [
+        "src"
+      ],
+      "@core/*": [
+        "src/core/*"
+      ],
+      "@planes/*": [
+        "src/planes/*"
+      ],
+      "@providers/*": [
+        "src/providers/*"
+      ],
+      "@/*": [
+        "src/*"
+      ]
+    }
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }

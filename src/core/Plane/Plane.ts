@@ -1,4 +1,4 @@
-export class PlaneClass {
+export class Plane {
     private readonly _acceleration: number;
     private readonly _agility: number;
     private readonly _maxVelocity: number;

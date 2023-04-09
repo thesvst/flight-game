@@ -1,6 +1,6 @@
-import { PlaneClass } from "../../core/Plane/Plane";
+import { Plane } from "@core";
 
-export class BasicPlane extends PlaneClass {
+export class BasicPlane extends Plane {
     constructor() {
         const acceleration = 1;
         const agility = 1;

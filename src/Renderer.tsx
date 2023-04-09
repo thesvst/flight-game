@@ -1,11 +1,11 @@
 import { useEffect, useRef } from "react";
-import { PlaneClass } from "./core/Plane/Plane";
-import { ThreeJSManager } from "./core/ThreeJSManager/ThreeJSManager";
-import { BasicPlane } from "./planes/BasicPlane/BasicPlane";
+import { Plane } from "@core";
+import { ThreeJSManager } from "@core";
+import { BasicPlane } from "@planes";
 
 export const Renderer = () => {
   const ThreeJSRef = useRef<ThreeJSManager>();
-  const Plane = useRef<PlaneClass>(new BasicPlane())
+  const Plane = useRef<Plane>(new BasicPlane())
 
   useEffect(() => {
     if (ThreeJSRef.current === undefined) {

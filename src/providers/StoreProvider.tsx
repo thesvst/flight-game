@@ -2,7 +2,6 @@ import { createContext, ReactNode } from "react";
 
 export const StoreContext = createContext(null);
 
-
 interface StoreProviderProps {
     children: ReactNode;
 } 
