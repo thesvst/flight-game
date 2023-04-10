@@ -83,16 +83,28 @@ export class Plane {
     }
   }
 
-  public turnOnKeyboardControls() {
-    window.addEventListener('keydown', (e) => {
-      e.preventDefault();
-      if (this.controls[e.key]) this.controls[e.key].pressed = true;
-    });
+  public turnOffKeyboardControls() {
+    window.removeEventListener('keydown', this._onKeyDownListener);
+    window.removeEventListener('keyup', this._onKeyUpListener);
 
-    window.addEventListener('keyup', (e) => {
-      e.preventDefault();
-      if (this.controls[e.key]) this.controls[e.key].pressed = false;
+    Object.keys(this.controls).forEach((key) => {
+      this.controls[key].pressed = false;
     });
+  }
+
+  private _onKeyUpListener(e: KeyboardEvent) {
+    e.preventDefault();
+    if (this.controls[e.key]) this.controls[e.key].pressed = false;
+  }
+
+  private _onKeyDownListener(e: KeyboardEvent) {
+    e.preventDefault();
+    if (this.controls[e.key]) this.controls[e.key].pressed = true;
+  }
+
+  public turnOnKeyboardControls() {
+    window.addEventListener('keydown', this._onKeyDownListener.bind(this));
+    window.addEventListener('keyup', this._onKeyUpListener.bind(this));
   }
 
   public planeMovementFraming() {

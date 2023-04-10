@@ -14,6 +14,7 @@ export class MapboxGLMap {
   private readonly _config: MapboxGLMapConfig;
   private readonly _markerClassName: string;
   private _ThreeJSManager: ThreeJSManager | undefined;
+  readonly MapboxGLMapThreeJSDOMElementID = 'mapboxGLThreeJS'
 
   get position() {
     return this._instance.getCenter();
@@ -34,7 +35,7 @@ export class MapboxGLMap {
     });
   }
 
-  public onLoadCallbacks(callbacks: (() => void)[]) {
+  public _onLoadCallbacks(callbacks: (() => void)[]) {
     this._instance.on('load', () => {
       callbacks.forEach((callback) => {
         callback();
@@ -110,6 +111,7 @@ export class MapboxGLMap {
       new THREE.DirectionalLight(0xffffff),
       undefined,
       new THREE.PerspectiveCamera(),
+      'mapboxGLThreeJS',
     );
   }
 

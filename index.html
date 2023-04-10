@@ -18,7 +18,15 @@
         margin: 0;
         padding: 0;
       }
+      .renderObject {
+        width: 100vw;
+        height: 100vh;
+        position: absolute;
+      }
     </style>
+    <div id="mapboxElement" class="renderObject"></div>
+    <div id="plane" class="renderObject"></div>
+    <div id="mapboxGLThreeJS" class="renderObject"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

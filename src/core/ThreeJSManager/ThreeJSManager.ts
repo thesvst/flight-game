@@ -9,13 +9,21 @@ export class ThreeJSManager {
   private _camera;
   private _model: THREE.Group | undefined;
   private _GLTFLoader = new GLTFLoader();
+  private readonly _DOMElementID: string;
+
+  get DOMElementID() {
+    return this._DOMElementID;
+  }
 
   constructor(
     scene: THREE.Scene | undefined,
     light: THREE.AmbientLight | THREE.DirectionalLight | undefined,
     renderer: THREE.WebGLRenderer | undefined,
     camera: THREE.PerspectiveCamera | undefined,
+    DOMElementID: string,
   ) {
+    this._DOMElementID = DOMElementID;
+
     if (scene) {
       this._scene = scene;
     } else {
@@ -86,28 +94,27 @@ export class ThreeJSManager {
   }
 
   private _initialize() {
-    const id = 'root';
-    const root = document.getElementById(id);
+    const container = document.getElementById(this._DOMElementID);
 
-    if (root) {
+    if (container) {
       this._setRendererSize();
       this._scene.add(this._light);
       const domElement = this._renderer.domElement;
       domElement.style.position = 'absolute';
       domElement.style.left = '0';
       domElement.style.top = '0';
-      root.appendChild(domElement);
+      container.appendChild(domElement);
       this._camera.position.set(0, -2, -35);
       this._camera.lookAt(0, 0, 0);
     } else {
-      throw new Error(`Element with id ${id} not found`);
+      throw new Error(`Element with id ${this._DOMElementID} not found`);
     }
   }
 
   public _loadGLTFModel(path: string, scale?: number) {
     this._GLTFLoader.load(path, (gltf) => {
       if (scale) {
-        gltf.scene.children[0].scale.multiplyScalar(scale)
+        gltf.scene.children[0].scale.multiplyScalar(scale);
       }
       this._model = gltf.scene;
       this._scene.add(this._model);

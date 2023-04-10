@@ -1,175 +1,84 @@
-import { useContext, useEffect, useRef, useState } from 'react';
-import { AirspaceIntelligenceGdanskCords, MapboxGLMap, MapboxGLMapConfig, Plane, Task } from '@core';
+import { useContext, useEffect, useRef } from 'react';
+import { MapboxGLMap } from '@core';
 import { ThreeJSManager } from '@core';
 import { BasicPlane } from '@planes';
 import { HeadsUp } from '@components';
 import styled from 'styled-components';
 import { StoreContext } from '@providers';
-import { CONTAINER_ID, initialLngLat } from '@core';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl from 'mapbox-gl';
-import { Tasker } from '@core';
+import { maxZoom } from './Renderer.consts';
 
-const accessToken = import.meta.env.KMB_IT_MAPBOX_GL_API_KEY;
+interface RendererProps {
+  ThreeJS: ThreeJSManager;
+  Plane: BasicPlane;
+  Map: MapboxGLMap;
+}
 
-const markerClassName = 'mapMarker';
-
-const maxZoom = 20;
-
-export const MAP_CONFIG: MapboxGLMapConfig = {
-  mapOptions: {
-    container: CONTAINER_ID,
-    center: initialLngLat,
-    zoom: 18,
-    maxZoom: 20,
-    bearing: 0,
-    pitch: 80,
-    interactive: false,
-    antialias: true,
-    attributionControl: false,
-    style: 'mapbox://styles/mapbox/satellite-streets-v12',
-    logoPosition: 'top-right',
-    optimizeForTerrain: false,
-  },
-  mapboxDem: {
-    type: 'raster-dem',
-    url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-    tileSize: 512,
-    maxzoom: 14,
-  },
-  mapboxTerrain: { source: 'mapbox-dem', exaggeration: 1.5 },
-};
-
-const tasks: Task[] = [
-  {
-    id: 1,
-    coordinates: [18.658931053252115, 54.41619506500858],
-    name: 'Collect a package!',
-    rewards: [],
-    activeStep: 0,
-    steps: [
-      {
-        id: 1,
-        coordinates: AirspaceIntelligenceGdanskCords,
-        name: 'Drop a package to AirspaceIntelligence Gdańsk',
-      },
-    ],
-  },
-];
-
-if (!accessToken)
-  prompt(
-    `Hey! I couldn't find MapboxGLJS API key in env variables. \nTo proceed please provide API key :) \n\nTo do so you need to register here \nhttps://www.mapbox.com/ \n\nand then claim your API key :)`,
-  );
-
-export const Renderer = () => {
-  const [animationEnabled, setAnimationEnabled] = useState(false);
-  const ThreeJSRef = useRef<ThreeJSManager>();
-  const PlaneRef = useRef<Plane>(new BasicPlane());
-  const MapRef = useRef<MapboxGLMap>();
-  const LastFrameTimeRef = useRef<Date>();
-  const TasksRef = useRef(new Tasker(tasks));
-
+export const Renderer = (props: RendererProps) => {
+  const FramerRef = useRef<number>(0);
   const { setVelocity, setBearing, setPitch, addDistance } = useContext(StoreContext);
+  const { ThreeJS, Map, Plane } = props;
+  let LastFrameTime = new Date();
+
+  function rerender() {
+    Plane.planeMovementFraming();
+    const modelRotation = ThreeJS.modelRotation;
+    const cameraPosition = ThreeJS.cameraPosition;
+    const velocity = Plane.velocity;
+    const planeBearing = Plane.bearing;
+    const pitch = Plane.pitch;
+    const mapZoom = Map._getZoom() ?? 0;
+    setVelocity(velocity);
+    setBearing(planeBearing);
+    setPitch(pitch);
+    ThreeJS._changeModelRotation({
+      x: mapZoom === maxZoom ? 0 : Plane.pitch,
+      y: modelRotation?.y ?? 0,
+      z: planeBearing,
+    });
+    if (cameraPosition)
+      ThreeJS._changeCameraPosition({
+        x: cameraPosition.x,
+        y: mapZoom === maxZoom ? 0 : Plane.pitch * 2,
+        z: cameraPosition.z,
+      });
+    ThreeJS._rerender();
+
+    const mapBearing = Map._getBearing();
+    const timeFromLastFrame = (new Date().getTime() - LastFrameTime.getTime()) * 0.001;
+    Map._setBearing(mapBearing + planeBearing);
+
+    if (Math.sign(pitch) === 1) {
+      Map._setZoom(mapZoom + pitch * 0.005);
+    } else {
+      Map._setZoom(mapZoom + pitch * 0.001);
+    }
+
+    const oldPos = Map.position;
+    const newPos = Map._calculateNewPosition(mapBearing + planeBearing, timeFromLastFrame, velocity);
+
+    const distanceTraveled = new mapboxgl.LngLat(...newPos).distanceTo(oldPos);
+    Map._updateMapPosition(newPos);
+    addDistance(distanceTraveled);
+
+    LastFrameTime = new Date();
+
+    FramerRef.current = requestAnimationFrame(rerender);
+  }
 
   useEffect(() => {
-    if (ThreeJSRef.current === undefined) {
-      ThreeJSRef.current = new ThreeJSManager(undefined, undefined, undefined, undefined);
-      ThreeJSRef.current._loadGLTFModel(PlaneRef.current.modelPath);
-      PlaneRef.current.turnOnKeyboardControls();
-    }
+    if (import.meta.env.DEV) Object.assign(window, { map: Map });
+    rerender();
 
-    if (MapRef.current === undefined) {
-      MapRef.current = new MapboxGLMap(accessToken, MAP_CONFIG, markerClassName);
-      MapRef.current.onLoadCallbacks([
-        () => {
-          TasksRef.current.availableTasks.forEach((task) => {
-            MapRef.current?._render3DModelOnMap(
-              task.coordinates,
-              0,
-              [Math.PI / 2, 0, 0],
-              `mission-${task.id}-cylinder`,
-              '/cylinder/scene.gltf',
-              100,
-            );
-          });
-        },
-        () => {
-          const element = document.createElement('img');
-          element.src = '/airspace.jpeg';
-          element.width = 60;
-          element.height = 60;
-          MapRef.current?._addMarker(element, AirspaceIntelligenceGdanskCords);
-        },
-      ]);
-      if (import.meta.env.DEV) Object.assign(window, { map: MapRef.current });
-    }
-
-    window.addEventListener('resize', () => ThreeJSRef.current?._onWindowResize());
-  }, []);
-
-  useEffect(() => {
-    function animate() {
-      PlaneRef.current.planeMovementFraming();
-      const modelRotation = ThreeJSRef.current?.modelRotation;
-      const cameraPosition = ThreeJSRef.current?.cameraPosition;
-      const velocity = PlaneRef.current.velocity;
-      const planeBearing = PlaneRef.current.bearing;
-      const pitch = PlaneRef.current.pitch;
-      const mapZoom = MapRef.current?._getZoom() ?? 0;
-      setVelocity(velocity);
-      setBearing(planeBearing);
-      setPitch(pitch);
-      if (modelRotation && PlaneRef.current)
-        ThreeJSRef.current?._changeModelRotation({
-          x: mapZoom === maxZoom ? 0 : PlaneRef.current.pitch,
-          y: modelRotation.y,
-          z: planeBearing,
-        });
-      if (cameraPosition)
-        ThreeJSRef.current?._changeCameraPosition({
-          x: cameraPosition.x,
-          y: mapZoom === maxZoom ? 0 : PlaneRef.current.pitch * 2,
-          z: cameraPosition.z,
-        });
-      ThreeJSRef.current?._rerender();
-
-      const mapBearing = MapRef.current?._getBearing();
-      if (LastFrameTimeRef.current && mapBearing !== undefined) {
-        const timeFromLastFrame = (new Date().getTime() - LastFrameTimeRef.current.getTime()) * 0.001;
-        MapRef.current?._setBearing(mapBearing + planeBearing);
-
-        if (Math.sign(pitch) === 1) {
-          MapRef.current?._setZoom(mapZoom + pitch * 0.005);
-        } else {
-          MapRef.current?._setZoom(mapZoom + pitch * 0.001);
-        }
-
-        const oldPos = MapRef.current?.position;
-        const newPos = MapRef.current?._calculateNewPosition(mapBearing + planeBearing, timeFromLastFrame, velocity);
-
-        if (oldPos && newPos) {
-          const distanceTraveled = new mapboxgl.LngLat(...newPos).distanceTo(oldPos);
-          MapRef.current?._updateMapPosition(newPos);
-          addDistance(distanceTraveled);
-
-          LastFrameTimeRef.current = new Date();
-        }
-      }
-
-      requestAnimationFrame(animate);
-    }
-
-    if (!animationEnabled) {
-      LastFrameTimeRef.current = new Date();
-      animate();
-      setAnimationEnabled(true);
-    }
+    return () => {
+      cancelAnimationFrame(FramerRef.current);
+      Object.assign(window, { map: undefined });
+    };
   }, []);
 
   return (
     <Wrapper>
-      <MapContainer id={CONTAINER_ID} />
       <HeadsUpWrapper>
         <HeadsUp />
       </HeadsUpWrapper>
@@ -185,10 +94,6 @@ const HeadsUpWrapper = styled('div')`
   width: 300px;
   backdrop-filter: blur(5px);
   border: 1px solid #ccc;
-`;
-
-const MapContainer = styled('div')`
-  height: 100%;
 `;
 
 const Wrapper = styled('div')`
