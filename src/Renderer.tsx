@@ -1,13 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import { Plane } from '@core';
 import { ThreeJSManager } from '@core';
 import { BasicPlane } from '@planes';
 import { HeadsUp } from '@components';
 import styled from 'styled-components';
+import { StoreContext } from '@providers';
 
 export const Renderer = () => {
   const ThreeJSRef = useRef<ThreeJSManager>();
   const PlaneRef = useRef<Plane>(new BasicPlane());
+  const { setVelocity, setBearing, setPitch } = useContext(StoreContext);
 
   useEffect(() => {
     if (ThreeJSRef.current === undefined) {
@@ -19,6 +21,13 @@ export const Renderer = () => {
         PlaneRef.current.planeMovementFraming();
         const modelRotation = ThreeJSRef.current?.modelRotation;
         const cameraPosition = ThreeJSRef.current?.cameraPosition;
+        const velocity = PlaneRef.current.velocity;
+        const bearing = PlaneRef.current.bearing;
+        const angle = PlaneRef.current.pitch;
+
+        setVelocity(velocity)
+        setBearing(bearing)
+        setPitch(angle)
 
         if (modelRotation && PlaneRef.current)
           ThreeJSRef.current?._changeModelRotation({

@@ -1,3 +1,5 @@
+import { StoreContext } from '@providers';
+import { useContext } from 'react';
 import styled from 'styled-components';
 
 const player = {
@@ -5,11 +7,16 @@ const player = {
   level: 1,
 };
 
+const startDate = new Date();
+
 export const HeadsUp = () => {
+  const { store } = useContext(StoreContext);
+  const time = Math.round((new Date().getTime() - startDate.getTime()) / 1000);
+
   return (
     <Wrapper>
       <Row>
-        <Property>Name:</Property>
+        <Property>Name: </Property>
         <Value>{player.name}</Value>
       </Row>
       <Row>
@@ -18,23 +25,23 @@ export const HeadsUp = () => {
       </Row>
       <Row>
         <Property>Distance: </Property>
-        <Value>0 meters</Value>
+        <Value>{store.distance} meters</Value>
       </Row>
       <Row>
         <Property>Velocity: </Property>
-        <Value>0 km/h</Value>
+        <Value>{store.velocity} km/h</Value>
       </Row>
       <Row>
-        <Property>Angle: </Property>
-        <Value>0</Value>
+        <Property>Pitch: </Property>
+        <Value>{Math.round(store.pitch * 1000) / 1000}</Value>
       </Row>
       <Row>
         <Property>Bearing: </Property>
-        <Value>0</Value>
+        <Value>{Math.round(store.bearing * 1000) / 1000}</Value>
       </Row>
       <Row>
         <Property>Time: </Property>
-        <Value>0</Value>
+        <Value>{time}</Value>
       </Row>
     </Wrapper>
   );
