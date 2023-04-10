@@ -81,14 +81,22 @@ export const Renderer = () => {
 
     if (MapRef.current === undefined) {
       MapRef.current = new MapboxGLMap(accessToken, MAP_CONFIG, markerClassName);
+      MapRef.current.onLoadCallbacks([
+        () => {
+          TasksRef.current.availableTasks.forEach((task) => {
+            MapRef.current?._render3DModelOnMap(
+              task.coordinates,
+              0,
+              [Math.PI / 2, 0, 0],
+              `mission-${task.id}-cylinder`,
+              '/cylinder/scene.gltf',
+              100,
+            );
+          });
+        },
+      ]);
       if (import.meta.env.DEV) Object.assign(window, { map: MapRef.current });
     }
-
-    TasksRef.current.availableTasks.forEach((task) => {
-      const element = Tasker._createHTMLTaskMarker(task.name, markerClassName);
-
-      MapRef.current?._addMarker(element, task.coordinates);
-    });
 
     window.addEventListener('resize', () => ThreeJSRef.current?._onWindowResize());
   }, []);

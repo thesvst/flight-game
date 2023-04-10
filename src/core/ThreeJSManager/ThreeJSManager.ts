@@ -64,7 +64,7 @@ export class ThreeJSManager {
   }
 
   public _setCameraProjectionMatrix(matrix: THREE.Matrix4) {
-    this._camera.projectionMatrix = matrix
+    this._camera.projectionMatrix = matrix;
   }
 
   public _resetRendererState() {
@@ -104,8 +104,11 @@ export class ThreeJSManager {
     }
   }
 
-  public _loadGLTFModel(path: string) {
+  public _loadGLTFModel(path: string, scale?: number) {
     this._GLTFLoader.load(path, (gltf) => {
+      if (scale) {
+        gltf.scene.children[0].scale.multiplyScalar(scale)
+      }
       this._model = gltf.scene;
       this._scene.add(this._model);
     });

@@ -34,6 +34,14 @@ export class MapboxGLMap {
     });
   }
 
+  public onLoadCallbacks(callbacks: (() => void)[]) {
+    this._instance.on('load', () => {
+      callbacks.forEach((callback) => {
+        callback();
+      });
+    });
+  }
+
   public _init() {
     this._enable3DTerrain();
     this._instance.addControl(
@@ -110,8 +118,8 @@ export class MapboxGLMap {
     altitude: number,
     rotate: [number, number, number],
     id: string,
-    layerName: string,
     modelPath: string,
+    scale = 1,
   ) {
     const modelAsMercatorCoordinate = mapboxgl.MercatorCoordinate.fromLngLat(position, altitude);
     const modelTransform = {
@@ -129,7 +137,7 @@ export class MapboxGLMap {
       type: 'custom',
       renderingMode: '3d',
       onAdd: (map, gl) => {
-        this._ThreeJSManager?._loadGLTFModel(modelPath);
+        this._ThreeJSManager?._loadGLTFModel(modelPath, scale);
         this._instance = map;
 
         const newRenderer = new THREE.WebGLRenderer({
@@ -161,6 +169,6 @@ export class MapboxGLMap {
       },
     };
 
-    this._instance.addLayer(layer, layerName);
+    this._instance.addLayer(layer, 'waterway-label');
   }
 }
