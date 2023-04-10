@@ -1,15 +1,18 @@
 import { useContext, useEffect, useRef, useState } from 'react';
-import { MapboxGLMap, MapboxGLMapConfig, Plane } from '@core';
+import { AirspaceIntelligenceGdanskCords, MapboxGLMap, MapboxGLMapConfig, Plane, Task } from '@core';
 import { ThreeJSManager } from '@core';
 import { BasicPlane } from '@planes';
 import { HeadsUp } from '@components';
 import styled from 'styled-components';
 import { StoreContext } from '@providers';
-import { CONTAINER_ID, initialLngLat } from '@core/MapboxGLMap/MapboxGLMap.types';
+import { CONTAINER_ID, initialLngLat } from '@core';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl from 'mapbox-gl';
+import { Tasker } from '@core';
 
 const accessToken = import.meta.env.KMB_IT_MAPBOX_GL_API_KEY;
+
+const markerClassName = 'cylinder'
 
 const maxZoom = 20;
 
@@ -37,6 +40,23 @@ export const MAP_CONFIG: MapboxGLMapConfig = {
   mapboxTerrain: { source: 'mapbox-dem', exaggeration: 1.5 },
 };
 
+const tasks: Task[] = [
+  {
+    id: 1,
+    coordinates: [18.658931053252115, 54.41619506500858],
+    name: 'Collect a package!',
+    rewards: [],
+    activeStep: 0,
+    steps: [
+      {
+        id: 1,
+        coordinates: AirspaceIntelligenceGdanskCords,
+        name: 'Drop a package to AirspaceIntelligence Gdańsk',
+      },
+    ],
+  },
+];
+
 if (!accessToken)
   prompt(
     `Hey! I couldn't find MapboxGLJS API key in env variables. \nTo proceed please provide API key :) \n\nTo do so you need to register here \nhttps://www.mapbox.com/ \n\nand then claim your API key :)`,
@@ -48,6 +68,7 @@ export const Renderer = () => {
   const PlaneRef = useRef<Plane>(new BasicPlane());
   const MapRef = useRef<MapboxGLMap>();
   const LastFrameTimeRef = useRef<Date>();
+  const TasksRef = useRef(new Tasker(tasks));
 
   const { setVelocity, setBearing, setPitch, addDistance } = useContext(StoreContext);
 
@@ -59,8 +80,14 @@ export const Renderer = () => {
     }
 
     if (MapRef.current === undefined) {
-      MapRef.current = new MapboxGLMap(accessToken, MAP_CONFIG);
+      MapRef.current = new MapboxGLMap(accessToken, MAP_CONFIG, markerClassName);
     }
+
+    TasksRef.current.availableTasks.forEach((task) => {
+      const element = Tasker._createHTMLTaskMarker(task.name, markerClassName);
+
+      MapRef.current?._addMarker(element, task.coordinates);
+    });
 
     window.addEventListener('resize', () => ThreeJSRef.current?._onWindowResize());
   }, []);

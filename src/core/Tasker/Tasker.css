@@ -1,0 +1,10 @@
+.cylinder {
+  top: -115px;
+  width: 100px;
+  height: 300px;
+  border-radius: 50px/25px;
+  background-color: rgba(225, 252, 127, 0.5);
+  line-height: 260px;
+  text-align: center;
+  color: green;
+}

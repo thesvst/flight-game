@@ -10,6 +10,7 @@ export interface MapboxGLMapConfig {
 export class MapboxGLMap {
   private readonly _config: MapboxGLMapConfig;
   private readonly _instance: mapboxgl.Map;
+  private readonly _markerClassName: string;
 
   get position() {
     return this._instance.getCenter();
@@ -19,10 +20,11 @@ export class MapboxGLMap {
     return this._instance.getZoom();
   }
 
-  constructor(accessToken: string, config: MapboxGLMapConfig) {
+  constructor(accessToken: string, config: MapboxGLMapConfig, markerClassName: string) {
     mapboxgl.accessToken = accessToken;
     this._config = config;
     this._instance = new mapboxgl.Map(this._config.mapOptions);
+    this._markerClassName = markerClassName;
   }
 
   public _init() {
@@ -60,11 +62,15 @@ export class MapboxGLMap {
   }
 
   public _getPitch() {
-    return this._instance.getPitch()
+    return this._instance.getPitch();
   }
 
   public _setPitch(pitch: number) {
     return this._instance.setPitch(pitch);
+  }
+
+  public _addMarker(element: HTMLElement, cords: [number, number]) {
+    new mapboxgl.Marker(element).setLngLat(cords).addTo(this._instance);
   }
 
   public _calculateNewPosition(bearing: number, time: number, velocity: number): [number, number] {
@@ -74,5 +80,11 @@ export class MapboxGLMap {
     const newLat = this.position.lat + (distance / 111111) * Math.cos(bearingRad);
 
     return [newLng, newLat];
+  }
+
+  public _removeAllMarkers() {
+    document.querySelectorAll(`.${this._markerClassName}`).forEach((marker) => {
+      marker.remove();
+    });
   }
 }
