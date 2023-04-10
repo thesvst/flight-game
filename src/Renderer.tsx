@@ -12,7 +12,7 @@ import { Tasker } from '@core';
 
 const accessToken = import.meta.env.KMB_IT_MAPBOX_GL_API_KEY;
 
-const markerClassName = 'cylinder';
+const markerClassName = 'mapMarker';
 
 const maxZoom = 20;
 
@@ -93,6 +93,13 @@ export const Renderer = () => {
               100,
             );
           });
+        },
+        () => {
+          const element = document.createElement('img');
+          element.src = '/airspace.jpeg';
+          element.width = 60;
+          element.height = 60;
+          MapRef.current?._addMarker(element, AirspaceIntelligenceGdanskCords);
         },
       ]);
       if (import.meta.env.DEV) Object.assign(window, { map: MapRef.current });
