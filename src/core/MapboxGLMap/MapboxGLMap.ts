@@ -1,5 +1,7 @@
 import { UnitsConverter } from '@core/UnitsConverter/UnitsConverter';
-import mapboxgl from 'mapbox-gl';
+import mapboxgl, { CustomLayerInterface, LngLatLike } from 'mapbox-gl';
+import { ThreeJSManager } from '@core/ThreeJSManager/ThreeJSManager';
+import * as THREE from 'three';
 
 export interface MapboxGLMapConfig {
   mapOptions: mapboxgl.MapboxOptions;
@@ -8,9 +10,10 @@ export interface MapboxGLMapConfig {
 }
 
 export class MapboxGLMap {
+  private _instance: mapboxgl.Map;
   private readonly _config: MapboxGLMapConfig;
-  private readonly _instance: mapboxgl.Map;
   private readonly _markerClassName: string;
+  private _ThreeJSManager: ThreeJSManager | undefined;
 
   get position() {
     return this._instance.getCenter();
@@ -25,6 +28,10 @@ export class MapboxGLMap {
     this._config = config;
     this._instance = new mapboxgl.Map(this._config.mapOptions);
     this._markerClassName = markerClassName;
+
+    this._instance.on('load', () => {
+      this._init();
+    });
   }
 
   public _init() {
@@ -34,6 +41,7 @@ export class MapboxGLMap {
         customAttribution: 'Welcome on board ~thesvst :)',
       }),
     );
+    this._initiateThreeJSManager();
   }
 
   private _enable3DTerrain() {
@@ -86,5 +94,73 @@ export class MapboxGLMap {
     document.querySelectorAll(`.${this._markerClassName}`).forEach((marker) => {
       marker.remove();
     });
+  }
+
+  private _initiateThreeJSManager() {
+    this._ThreeJSManager = new ThreeJSManager(
+      undefined,
+      new THREE.DirectionalLight(0xffffff),
+      undefined,
+      new THREE.PerspectiveCamera(),
+    );
+  }
+
+  public _render3DModelOnMap(
+    position: LngLatLike,
+    altitude: number,
+    rotate: [number, number, number],
+    id: string,
+    layerName: string,
+    modelPath: string,
+  ) {
+    const modelAsMercatorCoordinate = mapboxgl.MercatorCoordinate.fromLngLat(position, altitude);
+    const modelTransform = {
+      translateX: modelAsMercatorCoordinate.x,
+      translateY: modelAsMercatorCoordinate.y,
+      translateZ: modelAsMercatorCoordinate.z,
+      rotateX: rotate[0],
+      rotateY: rotate[1],
+      rotateZ: rotate[2],
+      scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(),
+    };
+
+    const layer: CustomLayerInterface = {
+      id,
+      type: 'custom',
+      renderingMode: '3d',
+      onAdd: (map, gl) => {
+        this._ThreeJSManager?._loadGLTFModel(modelPath);
+        this._instance = map;
+
+        const newRenderer = new THREE.WebGLRenderer({
+          canvas: map.getCanvas(),
+          context: gl,
+          antialias: true,
+        });
+        newRenderer.autoClear = false;
+
+        this._ThreeJSManager?._setRenderer(newRenderer);
+      },
+      render: (_, matrix) => {
+        const rotationX = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), modelTransform.rotateX);
+        const rotationY = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), modelTransform.rotateY);
+        const rotationZ = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), modelTransform.rotateZ);
+
+        const m = new THREE.Matrix4().fromArray(matrix);
+        const l = new THREE.Matrix4()
+          .makeTranslation(modelTransform.translateX, modelTransform.translateY, modelTransform.translateZ ?? 0)
+          .scale(new THREE.Vector3(modelTransform.scale, -modelTransform.scale, modelTransform.scale))
+          .multiply(rotationX)
+          .multiply(rotationY)
+          .multiply(rotationZ);
+
+        this._ThreeJSManager?._setCameraProjectionMatrix(m.multiply(l));
+        this._ThreeJSManager?._resetRendererState;
+        this._ThreeJSManager?._rerender();
+        this._instance.triggerRepaint();
+      },
+    };
+
+    this._instance.addLayer(layer, layerName);
   }
 }

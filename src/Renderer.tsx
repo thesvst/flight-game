@@ -12,7 +12,7 @@ import { Tasker } from '@core';
 
 const accessToken = import.meta.env.KMB_IT_MAPBOX_GL_API_KEY;
 
-const markerClassName = 'cylinder'
+const markerClassName = 'cylinder';
 
 const maxZoom = 20;
 
@@ -74,13 +74,14 @@ export const Renderer = () => {
 
   useEffect(() => {
     if (ThreeJSRef.current === undefined) {
-      ThreeJSRef.current = new ThreeJSManager();
+      ThreeJSRef.current = new ThreeJSManager(undefined, undefined, undefined, undefined);
       ThreeJSRef.current._loadGLTFModel(PlaneRef.current.modelPath);
       PlaneRef.current.turnOnKeyboardControls();
     }
 
     if (MapRef.current === undefined) {
       MapRef.current = new MapboxGLMap(accessToken, MAP_CONFIG, markerClassName);
+      if (import.meta.env.DEV) Object.assign(window, { map: MapRef.current });
     }
 
     TasksRef.current.availableTasks.forEach((task) => {
