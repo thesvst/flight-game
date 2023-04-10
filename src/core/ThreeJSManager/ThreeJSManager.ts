@@ -3,13 +3,42 @@ import { Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 export class ThreeJSManager {
-  private readonly _scene = new THREE.Scene();
-  private readonly _light = new THREE.AmbientLight(0xffffff, 5);
-  private readonly _renderer = new THREE.WebGL1Renderer({ antialias: true, alpha: true });
-  private _camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 1000);
+  private readonly _scene;
+  private readonly _light;
+  private readonly _renderer;
+  private _camera;
   private _model: THREE.Group | undefined;
 
-  constructor() {
+  constructor(
+    scene: THREE.Scene | undefined,
+    light: THREE.AmbientLight | THREE.DirectionalLight | undefined,
+    renderer: THREE.WebGLRenderer | undefined,
+    camera: THREE.PerspectiveCamera | undefined,
+  ) {
+    if (scene) {
+      this._scene = scene
+    } else {
+      this._scene = new THREE.Scene();
+    }
+
+    if (light) {
+      this._light = light
+    } else {
+      this._light = new THREE.AmbientLight(0xffffff, 5);
+    }
+
+    if (renderer) {
+      this._renderer = renderer;
+    } else {
+      this._renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    }
+
+    if (camera) {
+      this._camera = camera
+    } else {
+      this._camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 1000);
+    }
+
     this._initialize();
   }
 
