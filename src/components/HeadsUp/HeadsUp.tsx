@@ -25,7 +25,7 @@ export const HeadsUp = () => {
       </Row>
       <Row>
         <Property>Distance: </Property>
-        <Value>{store.distance} meters</Value>
+        <Value>{Math.round(store.distance)} meters</Value>
       </Row>
       <Row>
         <Property>Velocity: </Property>

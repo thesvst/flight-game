@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { StoreContext } from '@providers';
 import { CONTAINER_ID, initialLngLat } from '@core/MapboxGLMap/MapboxGLMap.types';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import mapboxgl from 'mapbox-gl';
 
 const accessToken = import.meta.env.KMB_IT_MAPBOX_GL_API_KEY;
 
@@ -43,7 +44,9 @@ export const Renderer = () => {
   const ThreeJSRef = useRef<ThreeJSManager>();
   const PlaneRef = useRef<Plane>(new BasicPlane());
   const MapRef = useRef<MapboxGLMap>();
-  const { setVelocity, setBearing, setPitch } = useContext(StoreContext);
+  const LastFrameTimeRef = useRef<Date>();
+
+  const { setVelocity, setBearing, setPitch, addDistance } = useContext(StoreContext);
 
   useEffect(() => {
     if (ThreeJSRef.current === undefined) {
@@ -65,16 +68,16 @@ export const Renderer = () => {
       const modelRotation = ThreeJSRef.current?.modelRotation;
       const cameraPosition = ThreeJSRef.current?.cameraPosition;
       const velocity = PlaneRef.current.velocity;
-      const bearing = PlaneRef.current.bearing;
+      const planeBearing = PlaneRef.current.bearing;
       const angle = PlaneRef.current.pitch;
       setVelocity(velocity);
-      setBearing(bearing);
+      setBearing(planeBearing);
       setPitch(angle);
       if (modelRotation && PlaneRef.current)
         ThreeJSRef.current?._changeModelRotation({
           x: PlaneRef.current.pitch,
           y: modelRotation.y,
-          z: PlaneRef.current.bearing,
+          z: planeBearing,
         });
       if (cameraPosition)
         ThreeJSRef.current?._changeCameraPosition({
@@ -83,10 +86,29 @@ export const Renderer = () => {
           z: cameraPosition.z,
         });
       ThreeJSRef.current?._rerender();
+
+      const mapBearing = MapRef.current?._getBearing();
+      if (LastFrameTimeRef.current && mapBearing !== undefined) {
+        const timeFromLastFrame = (new Date().getTime() - LastFrameTimeRef.current.getTime()) * 0.001;
+        MapRef.current?._setBearing(mapBearing + planeBearing);
+
+        const oldPos = MapRef.current?.position;
+        const newPos = MapRef.current?._calculateNewPosition(mapBearing + planeBearing, timeFromLastFrame, velocity);
+
+        if (oldPos && newPos) {
+          const distanceTraveled = new mapboxgl.LngLat(...newPos).distanceTo(oldPos);
+          MapRef.current?._updateMapPosition(newPos);
+          addDistance(distanceTraveled);
+
+          LastFrameTimeRef.current = new Date();
+        }
+      }
+
       requestAnimationFrame(animate);
     }
 
     if (!animationEnabled) {
+      LastFrameTimeRef.current = new Date();
       animate();
       setAnimationEnabled(true);
     }
