@@ -15,6 +15,10 @@ export class MapboxGLMap {
     return this._instance.getCenter();
   }
 
+  get zoom() {
+    return this._instance.getZoom();
+  }
+
   constructor(accessToken: string, config: MapboxGLMapConfig) {
     mapboxgl.accessToken = accessToken;
     this._config = config;
@@ -45,6 +49,22 @@ export class MapboxGLMap {
 
   public _getBearing() {
     return this._instance.getBearing();
+  }
+
+  public _getZoom() {
+    return this._instance.getZoom();
+  }
+
+  public _setZoom(zoom: number) {
+    this._instance.setZoom(zoom);
+  }
+
+  public _getPitch() {
+    return this._instance.getPitch()
+  }
+
+  public _setPitch(pitch: number) {
+    return this._instance.setPitch(pitch);
   }
 
   public _calculateNewPosition(bearing: number, time: number, velocity: number): [number, number] {

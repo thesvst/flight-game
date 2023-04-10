@@ -69,10 +69,10 @@ export const Renderer = () => {
       const cameraPosition = ThreeJSRef.current?.cameraPosition;
       const velocity = PlaneRef.current.velocity;
       const planeBearing = PlaneRef.current.bearing;
-      const angle = PlaneRef.current.pitch;
+      const pitch = PlaneRef.current.pitch;
       setVelocity(velocity);
       setBearing(planeBearing);
-      setPitch(angle);
+      setPitch(pitch);
       if (modelRotation && PlaneRef.current)
         ThreeJSRef.current?._changeModelRotation({
           x: PlaneRef.current.pitch,
@@ -91,6 +91,12 @@ export const Renderer = () => {
       if (LastFrameTimeRef.current && mapBearing !== undefined) {
         const timeFromLastFrame = (new Date().getTime() - LastFrameTimeRef.current.getTime()) * 0.001;
         MapRef.current?._setBearing(mapBearing + planeBearing);
+
+        if (Math.sign(pitch) === 1) {
+          MapRef.current?._setZoom(MapRef.current._getZoom() + pitch * 0.005);
+        } else {
+          MapRef.current?._setZoom(MapRef.current._getZoom() + pitch * 0.001);
+        }
 
         const oldPos = MapRef.current?.position;
         const newPos = MapRef.current?._calculateNewPosition(mapBearing + planeBearing, timeFromLastFrame, velocity);
