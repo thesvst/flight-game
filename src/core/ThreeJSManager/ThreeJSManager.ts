@@ -44,15 +44,22 @@ export class ThreeJSManager {
   }
 
   private _initialize() {
-    this._setRendererSize();
-    this._scene.add(this._light);
-    const domElement = this._renderer.domElement;
-    domElement.style.position = 'absolute';
-    domElement.style.left = '0';
-    domElement.style.top = '0';
-    document.body.appendChild(domElement);
-    this._camera.position.set(0, -2, -35);
-    this._camera.lookAt(0, 0, 0);
+    const id = 'root';
+    const root = document.getElementById(id);
+
+    if (root) {
+      this._setRendererSize();
+      this._scene.add(this._light);
+      const domElement = this._renderer.domElement;
+      domElement.style.position = 'absolute';
+      domElement.style.left = '0';
+      domElement.style.top = '0';
+      root.appendChild(domElement);
+      this._camera.position.set(0, -2, -35);
+      this._camera.lookAt(0, 0, 0);
+    } else {
+      throw new Error(`Element with id ${id} not found`);
+    }
   }
 
   public _loadGLTFModel(path: string) {
