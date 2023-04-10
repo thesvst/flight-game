@@ -11,11 +11,14 @@ import mapboxgl from 'mapbox-gl';
 
 const accessToken = import.meta.env.KMB_IT_MAPBOX_GL_API_KEY;
 
+const maxZoom = 20;
+
 export const MAP_CONFIG: MapboxGLMapConfig = {
   mapOptions: {
     container: CONTAINER_ID,
     center: initialLngLat,
     zoom: 18,
+    maxZoom: 20,
     bearing: 0,
     pitch: 80,
     interactive: false,
@@ -70,19 +73,20 @@ export const Renderer = () => {
       const velocity = PlaneRef.current.velocity;
       const planeBearing = PlaneRef.current.bearing;
       const pitch = PlaneRef.current.pitch;
+      const mapZoom = MapRef.current?._getZoom() ?? 0;
       setVelocity(velocity);
       setBearing(planeBearing);
       setPitch(pitch);
       if (modelRotation && PlaneRef.current)
         ThreeJSRef.current?._changeModelRotation({
-          x: PlaneRef.current.pitch,
+          x: mapZoom === maxZoom ? 0 : PlaneRef.current.pitch,
           y: modelRotation.y,
           z: planeBearing,
         });
       if (cameraPosition)
         ThreeJSRef.current?._changeCameraPosition({
           x: cameraPosition.x,
-          y: PlaneRef.current.pitch * 2,
+          y: mapZoom === maxZoom ? 0 : PlaneRef.current.pitch * 2,
           z: cameraPosition.z,
         });
       ThreeJSRef.current?._rerender();
@@ -93,9 +97,9 @@ export const Renderer = () => {
         MapRef.current?._setBearing(mapBearing + planeBearing);
 
         if (Math.sign(pitch) === 1) {
-          MapRef.current?._setZoom(MapRef.current._getZoom() + pitch * 0.005);
+          MapRef.current?._setZoom(mapZoom + pitch * 0.005);
         } else {
-          MapRef.current?._setZoom(MapRef.current._getZoom() + pitch * 0.001);
+          MapRef.current?._setZoom(mapZoom + pitch * 0.001);
         }
 
         const oldPos = MapRef.current?.position;
