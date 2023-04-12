@@ -14,7 +14,7 @@ export class MapboxGLMap {
   private readonly _config: MapboxGLMapConfig;
   private readonly _markerClassName: string;
   private _ThreeJSManager: ThreeJSManager | undefined;
-  readonly MapboxGLMapThreeJSDOMElementID = 'mapboxGLThreeJS'
+  readonly MapboxGLMapThreeJSDOMElementID = 'mapboxGLThreeJS';
 
   get position() {
     return this._instance.getCenter();
@@ -86,7 +86,7 @@ export class MapboxGLMap {
     return this._instance.setPitch(pitch);
   }
 
-  public _addMarker(element: HTMLElement, cords: [number, number]) {
+  public _addMarker(element: HTMLElement, cords: LngLatLike) {
     new mapboxgl.Marker(element).setLngLat(cords).addTo(this._instance);
   }
 

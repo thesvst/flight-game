@@ -26,14 +26,9 @@ export const GameInitializer = () => {
       () => {
         const rotation: [number, number, number] = [Math.PI / 2, 0, 0];
         TaskerObject.availableTasks.forEach((task) => {
-          MapObject._render3DModelOnMap(
-            task.coordinates,
-            0,
-            rotation,
-            `mission-${task.id}-cylinder`,
-            '/cylinder/scene.gltf',
-            100,
-          );
+          const el = Tasker._createHTMLTaskMarker('quest');
+          el.src = '/quest.png';
+          MapObject._addMarker(el, task.coordinates);
         });
       },
       () => {

@@ -15,7 +15,7 @@ export const MAP_CONFIG: MapboxGLMapConfig = {
   mapOptions: {
     container: CONTAINER_ID,
     center: initialLngLat,
-    zoom: 17,
+    zoom: 15,
     maxZoom: 20,
     bearing: 0,
     pitch: 0,
