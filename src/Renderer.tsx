@@ -7,7 +7,6 @@ import styled from 'styled-components';
 import { StoreContext } from '@providers';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl from 'mapbox-gl';
-import { maxZoom } from './Renderer.consts';
 
 interface RendererProps {
   ThreeJS: ThreeJSManager;
@@ -17,43 +16,23 @@ interface RendererProps {
 
 export const Renderer = (props: RendererProps) => {
   const FramerRef = useRef<number>(0);
-  const { setVelocity, setBearing, setPitch, addDistance } = useContext(StoreContext);
+  const { setVelocity, setBearing, addDistance } = useContext(StoreContext);
   const { ThreeJS, Map, Plane } = props;
   let LastFrameTime = new Date();
 
   function rerender() {
     Plane.planeMovementFraming();
-    const modelRotation = ThreeJS.modelRotation;
-    const cameraPosition = ThreeJS.cameraPosition;
     const velocity = Plane.velocity;
     const planeBearing = Plane.bearing;
-    const pitch = Plane.pitch;
-    const mapZoom = Map._getZoom() ?? 0;
     setVelocity(velocity);
     setBearing(planeBearing);
-    setPitch(pitch);
-    ThreeJS._changeModelRotation({
-      x: mapZoom === maxZoom ? 0 : Plane.pitch,
-      y: modelRotation?.y ?? 0,
-      z: planeBearing,
-    });
-    if (cameraPosition)
-      ThreeJS._changeCameraPosition({
-        x: cameraPosition.x,
-        y: mapZoom === maxZoom ? 0 : Plane.pitch * 2,
-        z: cameraPosition.z,
-      });
+    // TODO: Implement as map layer instead of separated threejs scene
+    ThreeJS._changeModelRotation({ x: 10, y: 0, z: planeBearing * 3 });
     ThreeJS._rerender();
 
     const mapBearing = Map._getBearing();
     const timeFromLastFrame = (new Date().getTime() - LastFrameTime.getTime()) * 0.001;
     Map._setBearing(mapBearing + planeBearing);
-
-    if (Math.sign(pitch) === 1) {
-      Map._setZoom(mapZoom + pitch * 0.005);
-    } else {
-      Map._setZoom(mapZoom + pitch * 0.001);
-    }
 
     const oldPos = Map.position;
     const newPos = Map._calculateNewPosition(mapBearing + planeBearing, timeFromLastFrame, velocity);

@@ -104,7 +104,7 @@ export class ThreeJSManager {
       domElement.style.left = '0';
       domElement.style.top = '0';
       container.appendChild(domElement);
-      this._camera.position.set(0, -2, -35);
+      this._camera.position.set(0, -50, -35);
       this._camera.lookAt(0, 0, 0);
     } else {
       throw new Error(`Element with id ${this._DOMElementID} not found`);

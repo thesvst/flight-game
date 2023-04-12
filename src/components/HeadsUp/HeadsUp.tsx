@@ -32,10 +32,6 @@ export const HeadsUp = () => {
         <Value>{store.velocity} km/h</Value>
       </Row>
       <Row>
-        <Property>Pitch: </Property>
-        <Value>{Math.round(store.pitch * 1000) / 1000}</Value>
-      </Row>
-      <Row>
         <Property>Bearing: </Property>
         <Value>{Math.round(store.bearing * 1000) / 1000}</Value>
       </Row>

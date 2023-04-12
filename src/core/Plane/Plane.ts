@@ -9,7 +9,6 @@ export class Plane {
 
   private _velocity = this._minVelocity;
   private _bearing = 0;
-  private _pitch = 0;
 
   get velocity(): number {
     return this._velocity;
@@ -17,10 +16,6 @@ export class Plane {
 
   get bearing(): number {
     return this._bearing;
-  }
-
-  get pitch(): number {
-    return this._pitch;
   }
 
   get modelPath() {
@@ -32,8 +27,6 @@ export class Plane {
     ArrowRight: { pressed: false, action: () => this.changeBearing('EAST') },
     w: { pressed: false, action: () => this.increaseVelocity() },
     s: { pressed: false, action: () => this.decreaseVelocity() },
-    ArrowUp: { pressed: false, action: () => this.increasePitch() },
-    ArrowDown: { pressed: false, action: () => this.decreasePitch() },
   };
 
   constructor(acceleration: number, agility: number, maxVelocity: number, modelPath: string) {
@@ -68,18 +61,6 @@ export class Plane {
     } else if (bearing === 'EAST' && this._bearing < 2 / 10) {
       const updatedBearing = this._bearing + this._agility * 0.005;
       this._bearing = updatedBearing;
-    }
-  }
-
-  private decreasePitch() {
-    if (this.pitch > -2 / 4) {
-      this._pitch = this._pitch - this._agility * 0.1;
-    }
-  }
-
-  private increasePitch() {
-    if (this.pitch < 2 / 8) {
-      this._pitch = this._pitch + this._agility * 0.1;
     }
   }
 
