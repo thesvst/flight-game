@@ -44,18 +44,12 @@ export class MapboxGLMap {
   }
 
   public _init() {
-    this._enable3DTerrain();
     this._instance.addControl(
       new mapboxgl.AttributionControl({
         customAttribution: 'Welcome on board ~thesvst :)',
       }),
     );
     this._initiateThreeJSManager();
-  }
-
-  private _enable3DTerrain() {
-    this._instance.addSource('mapbox-dem', this._config.mapboxDem!);
-    this._instance.setTerrain(this._config.mapboxTerrain);
   }
 
   public _updateMapPosition(lngLat: [number, number]) {
@@ -70,20 +64,8 @@ export class MapboxGLMap {
     return this._instance.getBearing();
   }
 
-  public _getZoom() {
-    return this._instance.getZoom();
-  }
-
   public _setZoom(zoom: number) {
     this._instance.setZoom(zoom);
-  }
-
-  public _getPitch() {
-    return this._instance.getPitch();
-  }
-
-  public _setPitch(pitch: number) {
-    return this._instance.setPitch(pitch);
   }
 
   public _addMarker(element: HTMLElement, cords: LngLatLike) {
@@ -115,6 +97,7 @@ export class MapboxGLMap {
     );
   }
 
+  // TODO: Add something fun to a map
   public _render3DModelOnMap(
     position: LngLatLike,
     altitude: number,

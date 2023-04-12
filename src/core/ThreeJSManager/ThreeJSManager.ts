@@ -51,22 +51,6 @@ export class ThreeJSManager {
     this._initialize();
   }
 
-  get cameraRotation() {
-    return this._camera.rotation;
-  }
-
-  get cameraPosition() {
-    return this._camera.position;
-  }
-
-  get modelRotation() {
-    return this._model?.rotation;
-  }
-
-  get modelPosition() {
-    return this._model?.position;
-  }
-
   public _setRenderer(renderer: THREE.WebGLRenderer) {
     this._renderer = renderer;
   }
@@ -119,10 +103,6 @@ export class ThreeJSManager {
       this._model = gltf.scene;
       this._scene.add(this._model);
     });
-  }
-
-  public _changeCameraPosition(position: Pick<Vector3, 'x' | 'y' | 'z'>) {
-    this._camera.position.set(position.x, position.y, position.z);
   }
 
   public _changeModelRotation(rotation: Pick<Vector3, 'x' | 'y' | 'z'>) {
