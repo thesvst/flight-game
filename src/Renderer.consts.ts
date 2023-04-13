@@ -1,9 +1,6 @@
 import { AirspaceIntelligenceGdanskCords, initialLngLat, MapboxGLMapConfig, Task } from '@core';
 
-export const markerClassName = 'mapMarker';
-
 export const CONTAINER_ID = 'mapboxElement';
-
 export const AirSpaceElement = document.createElement('img');
 AirSpaceElement.src = '/airspace.jpeg';
 AirSpaceElement.width = 60;
@@ -15,7 +12,7 @@ export const MAP_CONFIG: MapboxGLMapConfig = {
   mapOptions: {
     container: CONTAINER_ID,
     center: initialLngLat,
-    zoom: 15,
+    zoom: 12,
     maxZoom: 20,
     bearing: 0,
     pitch: 0,

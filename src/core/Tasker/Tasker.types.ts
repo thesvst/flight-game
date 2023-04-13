@@ -1,5 +1,3 @@
-import { LngLatLike } from "mapbox-gl";
-
 type Step = {
   id: number;
   coordinates: [number, number];
@@ -8,7 +6,7 @@ type Step = {
 
 export type Task = {
   id: 1;
-  coordinates: LngLatLike;
+  coordinates: [number, number];
   name: string;
   rewards: [];
   steps: Step[];

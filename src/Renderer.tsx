@@ -1,17 +1,17 @@
 import { useContext, useEffect, useRef } from 'react';
-import { MapboxGLMap } from '@core';
-import { ThreeJSManager } from '@core';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import mapboxgl from 'mapbox-gl';
+import { MapboxGLMap, Tasker, ThreeJSManager } from '@core';
 import { BasicPlane } from '@planes';
 import { HeadsUp } from '@components';
 import styled from 'styled-components';
 import { StoreContext } from '@providers';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import mapboxgl from 'mapbox-gl';
 
 interface RendererProps {
   ThreeJS: ThreeJSManager;
   Plane: BasicPlane;
   Map: MapboxGLMap;
+  Tasker: Tasker;
 }
 
 export const Renderer = (props: RendererProps) => {
@@ -22,6 +22,7 @@ export const Renderer = (props: RendererProps) => {
 
   function rerender() {
     Plane.planeMovementFraming();
+    const position = Map.position;
     const velocity = Plane.velocity;
     const planeBearing = Plane.bearing;
     setVelocity(velocity);
@@ -30,14 +31,31 @@ export const Renderer = (props: RendererProps) => {
     ThreeJS._changeModelRotation({ x: 10, y: 0, z: planeBearing * 3 });
     ThreeJS._rerender();
 
+    if (!props.Tasker.currentTask) {
+      props.Tasker.availableTasks.forEach((task) => {
+        const isInRange = Map._isInRange([position.lng, position.lat], task.coordinates, 100);
+        if (!isInRange) return
+
+        props.Tasker._beginTask(task.id)
+        if (props.Tasker.currentTask) {
+          const currentTaskStep = props.Tasker._getCurrentTaskActieStep();
+          const nextDestination = props.Tasker.currentTask.steps[currentTaskStep].coordinates
+
+          props.Map._removeMarkers(`img[${Tasker._markerType}]`);
+          const taskMarker= Tasker._createHTMLTaskMarker(Tasker._markerClassName, `${task.id}`);
+          props.Map._addMarker(taskMarker, nextDestination)
+
+        }
+      })
+    }
+
     const mapBearing = Map._getBearing();
     const timeFromLastFrame = (new Date().getTime() - LastFrameTime.getTime()) * 0.001;
     Map._setBearing(mapBearing + planeBearing);
 
-    const oldPos = Map.position;
     const newPos = Map._calculateNewPosition(mapBearing + planeBearing, timeFromLastFrame, velocity);
 
-    const distanceTraveled = new mapboxgl.LngLat(...newPos).distanceTo(oldPos);
+    const distanceTraveled = new mapboxgl.LngLat(...newPos).distanceTo(position);
     Map._updateMapPosition(newPos);
     addDistance(distanceTraveled);
 

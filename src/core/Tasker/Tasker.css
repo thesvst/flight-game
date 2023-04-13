@@ -1,13 +1,13 @@
-.quest {
+.task {
   color: gold;
   width: 20px;
   transition: .15s ease transform, .2s opacity;
-  animation: quest;
+  animation: taskAnimation;
   animation-duration: 1s;
   animation-iteration-count: infinite;
 }
 
-@keyframes quest {
+@keyframes taskAnimation {
   0% { width: 20px }
   50% { width: 25px }
   100% { width: 20px }

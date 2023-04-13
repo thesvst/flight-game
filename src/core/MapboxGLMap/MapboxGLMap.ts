@@ -2,6 +2,7 @@ import { UnitsConverter } from '@core/UnitsConverter/UnitsConverter';
 import mapboxgl, { CustomLayerInterface, LngLatLike } from 'mapbox-gl';
 import { ThreeJSManager } from '@core/ThreeJSManager/ThreeJSManager';
 import * as THREE from 'three';
+import * as turf from '@turf/turf'
 
 export interface MapboxGLMapConfig {
   mapOptions: mapboxgl.MapboxOptions;
@@ -12,7 +13,6 @@ export interface MapboxGLMapConfig {
 export class MapboxGLMap {
   private _instance: mapboxgl.Map;
   private readonly _config: MapboxGLMapConfig;
-  private readonly _markerClassName: string;
   private _ThreeJSManager: ThreeJSManager | undefined;
   readonly MapboxGLMapThreeJSDOMElementID = 'mapboxGLThreeJS';
 
@@ -24,11 +24,10 @@ export class MapboxGLMap {
     return this._instance.getZoom();
   }
 
-  constructor(accessToken: string, config: MapboxGLMapConfig, markerClassName: string) {
+  constructor(accessToken: string, config: MapboxGLMapConfig) {
     mapboxgl.accessToken = accessToken;
     this._config = config;
     this._instance = new mapboxgl.Map(this._config.mapOptions);
-    this._markerClassName = markerClassName;
 
     this._instance.on('load', () => {
       this._init();
@@ -81,10 +80,17 @@ export class MapboxGLMap {
     return [newLng, newLat];
   }
 
-  public _removeAllMarkers() {
-    document.querySelectorAll(`.${this._markerClassName}`).forEach((marker) => {
-      marker.remove();
-    });
+  public _removeMarkers(selector: string) {
+    if (selector) {
+      const elements = document.querySelectorAll(selector);
+      if (elements.length === 0) throw new Error(`None markers with selector ${selector} found.`)
+
+      elements.forEach((marker) => { marker.remove(); });
+    } else {
+      document.querySelectorAll('.mapboxgl-marker').forEach((marker) => {
+        marker.remove();
+      });
+    }
   }
 
   private _initiateThreeJSManager() {
@@ -155,5 +161,11 @@ export class MapboxGLMap {
     };
 
     this._instance.addLayer(layer, 'waterway-label');
+  }
+
+  public _isInRange(coordinates: [number, number], destinationCoordinates: [number, number], radius: number) {
+    const buffer = turf.circle(destinationCoordinates, radius, {steps: 64, units: 'meters'});
+    const point = turf.point(coordinates);
+    return turf.booleanPointInPolygon(point, buffer)
   }
 }

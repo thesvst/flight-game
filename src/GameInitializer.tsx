@@ -3,7 +3,7 @@ import { BasicPlane } from '@planes';
 import { AccessTokenContext } from '@providers';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Renderer } from './Renderer';
-import { AirSpaceElement, CONTAINER_ID, MAP_CONFIG, markerClassName, tasks } from './Renderer.consts';
+import { AirSpaceElement, CONTAINER_ID, MAP_CONFIG, tasks } from './Renderer.consts';
 
 export const GameInitializer = () => {
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -15,7 +15,7 @@ export const GameInitializer = () => {
 
   useEffect(() => {
     const PlaneObject = new BasicPlane();
-    const MapObject = new MapboxGLMap(token, MAP_CONFIG, markerClassName);
+    const MapObject = new MapboxGLMap(token, MAP_CONFIG);
     const ThreeJSObject = new ThreeJSManager(undefined, undefined, undefined, undefined, 'plane');
     const TaskerObject = new Tasker(tasks);
 
@@ -26,9 +26,7 @@ export const GameInitializer = () => {
       () => {
         const rotation: [number, number, number] = [Math.PI / 2, 0, 0];
         TaskerObject.availableTasks.forEach((task) => {
-          const el = Tasker._createHTMLTaskMarker('quest');
-          el.src = '/quest.png';
-          MapObject._addMarker(el, task.coordinates);
+          MapObject._addMarker(Tasker._createHTMLTaskMarker('task', `${task.id}`), task.coordinates);
         });
       },
       () => {
@@ -66,7 +64,7 @@ export const GameInitializer = () => {
   return (
     <div>
       {ThreeJS.current && Plane.current && Map.current && Tasks.current && mapLoaded ? (
-        <Renderer ThreeJS={ThreeJS.current!} Map={Map.current} Plane={Plane.current} />
+        <Renderer ThreeJS={ThreeJS.current!} Map={Map.current} Plane={Plane.current} Tasker={Tasks.current}/>
       ) : (
         'Loading'
       )}

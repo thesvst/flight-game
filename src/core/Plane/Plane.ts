@@ -4,7 +4,7 @@ export class Plane {
   private readonly _maxVelocity: number;
   private readonly _modelPath: string;
 
-  // Plane is going to have poor phycics, so its forced to fly indefinitely
+  // Plane is going to have poor physics, so it's forced to fly indefinitely
   private readonly _minVelocity = 0;
 
   private _velocity = this._minVelocity;
