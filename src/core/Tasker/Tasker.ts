@@ -42,15 +42,38 @@ export class Tasker {
     if (this._currentTask !== null) {
       throw new Error(`More than one task at once are not supported.`);
     }
-    this._currentTask = this._findAvailableTaskById(id);
+
+    const task = this._findAvailableTaskById(id);
+    this._currentTask = task;
+    this._availableTasks = this._availableTasks.filter((task) => task.id !== task.id)
     this._currentTask.activeStep = 0;
   }
 
-  public _getCurrentTaskActieStep() {
-    if (!this._currentTask) {
-      throw Error('None tasks active');
-    }
+  public _isNextTaskStepAvailable() {
+    this._validateCurrentTask()
 
-    return this._currentTask.activeStep;
+    return this._currentTask!.activeStep < this._currentTask!.steps.length - 1
+  }
+
+  public _getCurrentTaskActiveStep() {
+    this._validateCurrentTask()
+
+    return this._currentTask!.activeStep;
+  }
+
+  public _taskCompleted() {
+    this._validateCurrentTask()
+
+    this._completedTasks.push(this._currentTask!)
+    this._currentTask = null;
+  }
+
+  private _validateCurrentTask() {
+    if (!this._currentTask) throw new Error(`There isn't any task activated`);
+  }
+
+  public _setNewStep() {
+    this._validateCurrentTask()
+    this._currentTask!.activeStep += 1!
   }
 }

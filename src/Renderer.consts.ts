@@ -12,7 +12,7 @@ export const MAP_CONFIG: MapboxGLMapConfig = {
   mapOptions: {
     container: CONTAINER_ID,
     center: initialLngLat,
-    zoom: 12,
+    zoom: 15,
     maxZoom: 20,
     bearing: 0,
     pitch: 0,
@@ -45,6 +45,11 @@ export const tasks: Task[] = [
         coordinates: AirspaceIntelligenceGdanskCords,
         name: 'Drop a package to AirspaceIntelligence Gdańsk',
       },
+      {
+        id: 2,
+        coordinates: initialLngLat,
+        name: 'Go back to the beach'
+      }
     ],
   },
 ];

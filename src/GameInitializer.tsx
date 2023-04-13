@@ -26,7 +26,7 @@ export const GameInitializer = () => {
       () => {
         const rotation: [number, number, number] = [Math.PI / 2, 0, 0];
         TaskerObject.availableTasks.forEach((task) => {
-          MapObject._addMarker(Tasker._createHTMLTaskMarker('task', `${task.id}`), task.coordinates);
+          MapObject._addMarker(Tasker._createHTMLTaskMarker(Tasker._markerClassName, `${task.id}`), task.coordinates);
         });
       },
       () => {
