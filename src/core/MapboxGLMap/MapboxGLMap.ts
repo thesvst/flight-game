@@ -154,7 +154,7 @@ export class MapboxGLMap {
           .multiply(rotationZ);
 
         this._ThreeJSManager?._setCameraProjectionMatrix(m.multiply(l));
-        this._ThreeJSManager?._resetRendererState;
+        this._ThreeJSManager?._resetRendererState();
         this._ThreeJSManager?._rerender();
         this._instance.triggerRepaint();
       },

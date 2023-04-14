@@ -17,6 +17,10 @@ export class Tasker {
     return this._availableTasks;
   }
 
+  get completedTasks() {
+    return this._completedTasks;
+  }
+
   constructor(tasks: Task[], markerClassName: string, markerType: string) {
     this._availableTasks = tasks;
     this._markerClassName = markerClassName
@@ -51,9 +55,9 @@ export class Tasker {
       throw new Error(`More than one task at once are not supported.`);
     }
 
-    const task = this._findAvailableTaskById(id);
-    this._currentTask = task;
-    this._availableTasks = this._availableTasks.filter((task) => task.id !== task.id)
+    const currentTask = this._findAvailableTaskById(id);
+    this._currentTask = currentTask;
+    this._availableTasks = this._availableTasks.filter((task) => task.id !== currentTask.id)
     this._currentTask.activeStep = 0;
   }
 
@@ -72,7 +76,8 @@ export class Tasker {
   public _taskCompleted() {
     this._validateCurrentTask()
 
-    this._completedTasks.push(this._currentTask!)
+    this._completedTasks = [...this._completedTasks, this._currentTask!]
+    this._availableTasks = this._availableTasks.filter((task) => task.id !== this._currentTask?.id)
     this._currentTask = null;
   }
 

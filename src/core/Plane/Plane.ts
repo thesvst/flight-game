@@ -55,10 +55,10 @@ export class Plane {
   }
 
   private changeBearing(bearing: 'WEST' | 'EAST') {
-    if (bearing === 'WEST' && this._bearing > -2 / 10) {
+    if (bearing === 'WEST' && this._bearing > -2 / 5) {
       const updatedBearing = this._bearing - this._agility * 0.005;
       this._bearing = updatedBearing;
-    } else if (bearing === 'EAST' && this._bearing < 2 / 10) {
+    } else if (bearing === 'EAST' && this._bearing < 2 / 5) {
       const updatedBearing = this._bearing + this._agility * 0.005;
       this._bearing = updatedBearing;
     }

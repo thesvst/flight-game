@@ -7,7 +7,11 @@ const initialStore: Store = {
   bearing: 0,
   distance: 0,
   estimatedArrival: null,
-  questLog: [],
+  questLog: {
+    completed: [],
+    current: null,
+    available: []
+  },
 }
 
 export const StoreContext = createContext<TStoreContext>(null!);
@@ -26,8 +30,14 @@ const reducer = (state: Store, action: ReducerAction): Store => {
     case ReducerActionType.SET_ESTIMATED_ARRIVAL: {
       return { ...state, estimatedArrival: action.payload }
     }
-    case ReducerActionType.SET_QUEST_LOG: {
-      return { ...state, questLog: action.payload }
+    case ReducerActionType.SET_AVAILABLE_QUESTS: {
+      return { ...state, questLog: { ...state.questLog, available: action.payload} }
+    }
+    case ReducerActionType.SET_COMPLETED_QUESTS: {
+      return { ...state, questLog: { ...state.questLog, completed: action.payload} }
+    }
+    case ReducerActionType.SET_CURRENT_QUEST: {
+      return { ...state, questLog: { ...state.questLog, current: action.payload} }
     }
   }
 }
@@ -53,8 +63,14 @@ export const StoreProvider = (props: StoreProviderProps) => {
     setEstimatedArrival(value: EstimatedArrival) {
       dispatch({ type: ReducerActionType.SET_ESTIMATED_ARRIVAL, payload: value })
     },
-    setQuestLog(value: Task[]) {
-      dispatch({ type: ReducerActionType.SET_QUEST_LOG, payload: value })
-    }
+    setAvailableTasks(value: Task[]) {
+      dispatch({ type: ReducerActionType.SET_AVAILABLE_QUESTS, payload: value })
+    },
+    setCompletedTasks(value: Task[]) {
+      dispatch({ type: ReducerActionType.SET_COMPLETED_QUESTS, payload: value })
+    },
+    setCurrentTask(value: Task | null) {
+      dispatch({ type: ReducerActionType.SET_CURRENT_QUEST, payload: value })
+    },
   }}>{props.children}</StoreContext.Provider>;
 };

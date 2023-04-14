@@ -40,8 +40,8 @@ export const HeadsUp = () => {
         <Value>{time}</Value>
       </Row>
       <Row>
-        <Property>Estimated Arrival: </Property>
-        <Value>{store.estimatedArrival ?? 'Pick a task'} {store.estimatedArrival && 'seconds'}</Value>
+        <Property>Est. Arrival: </Property>
+        <Value>{store.estimatedArrival ?? 'Collect a quest'} {store.estimatedArrival && 'seconds'}</Value>
       </Row>
     </Wrapper>
   );

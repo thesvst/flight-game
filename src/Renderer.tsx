@@ -17,7 +17,7 @@ interface RendererProps {
 
 export const Renderer = (props: RendererProps) => {
   const FramerRef = useRef<number>(0);
-  const { setVelocity, setBearing, addDistance, setEstimatedArrival } = useContext(StoreContext);
+  const { setVelocity, setBearing, addDistance, setEstimatedArrival, setCompletedTasks, setAvailableTasks, setCurrentTask, store } = useContext(StoreContext);
   const { ThreeJS, Map, Plane, Tasker } = props;
   let LastFrameTime = new Date();
 
@@ -80,6 +80,10 @@ export const Renderer = (props: RendererProps) => {
             const marker = Tasker._createHTMLTaskMarker(`${id}`)
             Map._addMarker(marker, coordinates)
           })
+
+          setAvailableTasks(Tasker.availableTasks)
+          setCurrentTask(Tasker.currentTask)
+          setCompletedTasks(Tasker.completedTasks)
         }
       }
     }
@@ -92,9 +96,14 @@ export const Renderer = (props: RendererProps) => {
     Map._setBearing(mapBearing + planeBearing);
     Map._updateMapPosition(newPos);
 
-    setVelocity(velocity);
-    setBearing(planeBearing);
-    addDistance(distanceTraveled);
+    if (store.velocity !== velocity) setVelocity(velocity);
+    if (store.bearing !== planeBearing) setBearing(planeBearing);
+    if (store.distance !== distanceTraveled) addDistance(distanceTraveled);
+
+    if (store.questLog.available.length !== Tasker.availableTasks.length) setAvailableTasks(Tasker.availableTasks);
+    if (JSON.stringify(store.questLog.current) !== JSON.stringify(Tasker.currentTask)) setCurrentTask(Tasker.currentTask);
+    if (store.questLog.completed.length !== Tasker.completedTasks.length) setCompletedTasks(Tasker.completedTasks)
+
     if (estimatedArrival) setEstimatedArrival(Math.round(estimatedArrival))
 
     LastFrameTime = new Date();

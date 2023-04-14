@@ -7,7 +7,6 @@ import { AirSpaceElement, CONTAINER_ID, MAP_CONFIG, tasks } from './Renderer.con
 
 export const GameInitializer = () => {
   const [mapLoaded, setMapLoaded] = useState(false);
-  const { setQuestLog } = useContext(StoreContext)
   const ThreeJS = useRef<ThreeJSManager>();
   const Plane = useRef<BasicPlane>();
   const Map = useRef<MapboxGLMap>();
@@ -29,7 +28,6 @@ export const GameInitializer = () => {
         TaskerObject.availableTasks.forEach((task) => {
           MapObject._addMarker(TaskerObject._createHTMLTaskMarker(`${task.id}`), task.coordinates);
         });
-        setQuestLog(TaskerObject.availableTasks)
       },
       () => {
         MapObject._addMarker(AirSpaceElement, AirspaceIntelligenceGdanskCords);
