@@ -1,12 +1,13 @@
 import { AirspaceIntelligenceGdanskCords, MapboxGLMap, Tasker, ThreeJSManager } from '@core';
 import { BasicPlane } from '@planes';
-import { AccessTokenContext } from '@providers';
+import { AccessTokenContext, StoreContext } from '@providers';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Renderer } from './Renderer';
 import { AirSpaceElement, CONTAINER_ID, MAP_CONFIG, tasks } from './Renderer.consts';
 
 export const GameInitializer = () => {
   const [mapLoaded, setMapLoaded] = useState(false);
+  const { setQuestLog } = useContext(StoreContext)
   const ThreeJS = useRef<ThreeJSManager>();
   const Plane = useRef<BasicPlane>();
   const Map = useRef<MapboxGLMap>();
@@ -28,6 +29,7 @@ export const GameInitializer = () => {
         TaskerObject.availableTasks.forEach((task) => {
           MapObject._addMarker(TaskerObject._createHTMLTaskMarker(`${task.id}`), task.coordinates);
         });
+        setQuestLog(TaskerObject.availableTasks)
       },
       () => {
         MapObject._addMarker(AirSpaceElement, AirspaceIntelligenceGdanskCords);

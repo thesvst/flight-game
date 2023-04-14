@@ -6,6 +6,7 @@ import { BasicPlane } from '@planes';
 import { HeadsUp, Compass, DirectionArrow } from '@components';
 import styled from 'styled-components';
 import { StoreContext, EstimatedArrival } from '@providers';
+import { QuestLog } from '@components/QuestLog/QuestLog';
 
 interface RendererProps {
   ThreeJS: ThreeJSManager;
@@ -115,6 +116,9 @@ export const Renderer = (props: RendererProps) => {
       <HeadsUpWrapper>
         <HeadsUp />
       </HeadsUpWrapper>
+      <QuestLogWrapper>
+        <QuestLog />
+      </QuestLogWrapper>
       <CompassWrapper>
       <CompassInnerWrapper>
         <Compass deg={mapBearing} />
@@ -167,4 +171,13 @@ const DirectionArrowWrapper = styled('div')`
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
+`
+const QuestLogWrapper = styled('div')`
+  position: absolute;
+  top: 160px;
+  right: 0;
+  z-index: 100;
+  width: 300px;
+  backdrop-filter: blur(5px);
+  border: 1px solid #ccc;
 `

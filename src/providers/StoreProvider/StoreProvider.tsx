@@ -1,11 +1,13 @@
 import { createContext, ReactNode, useReducer } from 'react';
 import { EstimatedArrival, ReducerAction, ReducerActionType, Store, TStoreContext } from './StoreProvider.types';
+import { Task } from '@core';
 
 const initialStore: Store = {
   velocity: 0,
   bearing: 0,
   distance: 0,
   estimatedArrival: null,
+  questLog: [],
 }
 
 export const StoreContext = createContext<TStoreContext>(null!);
@@ -23,6 +25,9 @@ const reducer = (state: Store, action: ReducerAction): Store => {
     }
     case ReducerActionType.SET_ESTIMATED_ARRIVAL: {
       return { ...state, estimatedArrival: action.payload }
+    }
+    case ReducerActionType.SET_QUEST_LOG: {
+      return { ...state, questLog: action.payload }
     }
   }
 }
@@ -47,6 +52,9 @@ export const StoreProvider = (props: StoreProviderProps) => {
     },
     setEstimatedArrival(value: EstimatedArrival) {
       dispatch({ type: ReducerActionType.SET_ESTIMATED_ARRIVAL, payload: value })
+    },
+    setQuestLog(value: Task[]) {
+      dispatch({ type: ReducerActionType.SET_QUEST_LOG, payload: value })
     }
   }}>{props.children}</StoreContext.Provider>;
 };

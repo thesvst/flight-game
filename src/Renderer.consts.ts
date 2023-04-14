@@ -34,7 +34,7 @@ export const tasks: Task[] = [
   {
     id: 1,
     coordinates: [18.658931053252115, 54.41619506500858],
-    name: 'Collect a package!',
+    name: 'Deliver a package to the Airspace Intelligence!',
     rewards: [],
     activeStep: 0,
     steps: [
