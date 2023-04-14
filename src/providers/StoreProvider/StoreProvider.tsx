@@ -1,10 +1,11 @@
 import { createContext, ReactNode, useReducer } from 'react';
-import { ReducerAction, ReducerActionType, Store, TStoreContext } from './StoreProvider.types';
+import { EstimatedArrival, ReducerAction, ReducerActionType, Store, TStoreContext } from './StoreProvider.types';
 
 const initialStore: Store = {
   velocity: 0,
   bearing: 0,
   distance: 0,
+  estimatedArrival: null,
 }
 
 export const StoreContext = createContext<TStoreContext>(null!);
@@ -19,6 +20,9 @@ const reducer = (state: Store, action: ReducerAction): Store => {
     }
     case ReducerActionType.ADD_DISTANCE: {
       return { ...state, distance: state.distance + action.payload }
+    }
+    case ReducerActionType.SET_ESTIMATED_ARRIVAL: {
+      return { ...state, estimatedArrival: action.payload }
     }
   }
 }
@@ -40,6 +44,9 @@ export const StoreProvider = (props: StoreProviderProps) => {
     },
     addDistance(value: number) {
       dispatch({ type: ReducerActionType.ADD_DISTANCE, payload: value })
+    },
+    setEstimatedArrival(value: EstimatedArrival) {
+      dispatch({ type: ReducerActionType.SET_ESTIMATED_ARRIVAL, payload: value })
     }
   }}>{props.children}</StoreContext.Provider>;
 };

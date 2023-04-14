@@ -172,4 +172,11 @@ export class MapboxGLMap {
   static _calculateAngleBetweenCoordinates(coordinates: [number, number], destinationCoordinates: [number, number], bearing: number) {
     return turf.bearing(turf.point(coordinates), turf.point(destinationCoordinates)) - bearing
   }
+
+  static _calculateArrivalTime(coordinates: [number, number], destinationCoordinates: [number, number], velocity: number) {
+    const currentMercatorCoords = mapboxgl.MercatorCoordinate.fromLngLat(coordinates).toLngLat();
+    const destMercatorCoords = mapboxgl.MercatorCoordinate.fromLngLat(destinationCoordinates).toLngLat();
+
+    return currentMercatorCoords.distanceTo(destMercatorCoords) / velocity;
+  }
 }

@@ -1,11 +1,11 @@
 import { useContext, useEffect, useRef } from 'react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl from 'mapbox-gl';
-import { MapboxGLMap, Tasker as TaskerClass, ThreeJSManager } from '@core';
+import { MapboxGLMap, Tasker as TaskerClass, ThreeJSManager, UnitsConverter } from '@core';
 import { BasicPlane } from '@planes';
 import { HeadsUp, Compass, DirectionArrow } from '@components';
 import styled from 'styled-components';
-import { StoreContext } from '@providers';
+import { StoreContext, EstimatedArrival } from '@providers';
 
 interface RendererProps {
   ThreeJS: ThreeJSManager;
@@ -16,19 +16,23 @@ interface RendererProps {
 
 export const Renderer = (props: RendererProps) => {
   const FramerRef = useRef<number>(0);
-  const { setVelocity, setBearing, addDistance } = useContext(StoreContext);
+  const { setVelocity, setBearing, addDistance, setEstimatedArrival } = useContext(StoreContext);
   const { ThreeJS, Map, Plane, Tasker } = props;
   let LastFrameTime = new Date();
 
   let mapBearing = Map._getBearing()
   let position = Map.position
+  let estimatedArrival: EstimatedArrival = null;
+  let positionAsNumArr: [number, number] = [position.lng, position.lat]
 
   function rerender() {
     Plane.planeMovementFraming();
     const velocity = Plane.velocity;
     const planeBearing = Plane.bearing;
     position = Map.position;
+    positionAsNumArr = [position.lng, position.lat]
     mapBearing = Map._getBearing()
+
 
     // Plane handling
     // TODO: Implement as map layer instead of separated threejs scene
@@ -37,8 +41,11 @@ export const Renderer = (props: RendererProps) => {
 
     // Task Handling
     if (!Tasker.currentTask) {
+      estimatedArrival = null;
+      setEstimatedArrival(null);
+
       Tasker.availableTasks.forEach((task) => {
-        const isInRange = MapboxGLMap._isInRange([position.lng, position.lat], task.coordinates, 100);
+        const isInRange = MapboxGLMap._isInRange(positionAsNumArr, task.coordinates, 100);
 
         if (isInRange) {
           Tasker._beginTask(task.id)
@@ -53,7 +60,9 @@ export const Renderer = (props: RendererProps) => {
       })
     } else {
       const destination = Tasker._getNextTaskStepCoordinates()
-      const isInRange = MapboxGLMap._isInRange([position.lng, position.lat], destination, 100);
+      const isInRange = MapboxGLMap._isInRange(positionAsNumArr, destination, 100);
+      const velocityInMS = UnitsConverter.KmhToMs(velocity);
+      estimatedArrival = MapboxGLMap._calculateArrivalTime(positionAsNumArr, destination, velocityInMS);
 
       if (isInRange) {
         Map._removeMarkers(`img[${Tasker._markerType}="${Tasker.currentTask.id}"]`)
@@ -85,6 +94,7 @@ export const Renderer = (props: RendererProps) => {
     setVelocity(velocity);
     setBearing(planeBearing);
     addDistance(distanceTraveled);
+    if (estimatedArrival) setEstimatedArrival(Math.round(estimatedArrival))
 
     LastFrameTime = new Date();
     FramerRef.current = requestAnimationFrame(rerender);
@@ -112,10 +122,9 @@ export const Renderer = (props: RendererProps) => {
       </CompassWrapper>
       { Tasker.currentTask && (
         <DirectionArrowWrapper>
-          <DirectionArrow angle={MapboxGLMap._calculateAngleBetweenCoordinates(
-            [Map.position.lng, Map.position.lat], Tasker.currentTask.steps[Tasker.currentTask.activeStep].coordinates, mapBearing
-          )
-          } />
+          <DirectionArrow
+            angle={MapboxGLMap._calculateAngleBetweenCoordinates(positionAsNumArr, Tasker._getNextTaskStepCoordinates(), mapBearing)}
+          />
         </DirectionArrowWrapper>
       )}
     </Wrapper>

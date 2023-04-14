@@ -1,4 +1,5 @@
 import { Task } from './Tasker.types';
+import mapboxgl from 'mapbox-gl';
 
 export class Tasker {
   readonly _markerType: string;
@@ -85,6 +86,5 @@ export class Tasker {
 
     const step = this._getCurrentTaskActiveStep();
     return this.currentTask!.steps[step].coordinates
-
   }
 }

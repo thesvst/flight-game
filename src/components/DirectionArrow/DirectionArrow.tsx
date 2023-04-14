@@ -5,8 +5,6 @@ interface DirectionArrowProps {
 }
 
 export const DirectionArrow = (props: DirectionArrowProps) => {
-  console.log(props.angle)
-
   return (
     <div style={{ transition: '.15s ease all', transform: `rotate(${Math.round(props.angle)}deg)` }}>
       <Arrow />
