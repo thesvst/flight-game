@@ -1,32 +1,34 @@
 import { useContext, useEffect, useRef } from 'react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl from 'mapbox-gl';
-import { MapboxGLMap, Tasker, ThreeJSManager } from '@core';
+import { MapboxGLMap, Tasker as TaskerClass, ThreeJSManager } from '@core';
 import { BasicPlane } from '@planes';
-import { HeadsUp } from '@components';
+import { HeadsUp, Compass, DirectionArrow } from '@components';
 import styled from 'styled-components';
 import { StoreContext } from '@providers';
-import { Compass } from '@components/Compass/Compass';
 
 interface RendererProps {
   ThreeJS: ThreeJSManager;
   Plane: BasicPlane;
   Map: MapboxGLMap;
-  Tasker: Tasker;
+  Tasker: TaskerClass;
 }
 
 export const Renderer = (props: RendererProps) => {
   const FramerRef = useRef<number>(0);
   const { setVelocity, setBearing, addDistance } = useContext(StoreContext);
-  const { ThreeJS, Map, Plane } = props;
+  const { ThreeJS, Map, Plane, Tasker } = props;
   let LastFrameTime = new Date();
+
+  let mapBearing = Map._getBearing()
+  let position = Map.position
 
   function rerender() {
     Plane.planeMovementFraming();
-    const position = Map.position;
     const velocity = Plane.velocity;
     const planeBearing = Plane.bearing;
-    const mapBearing = Map._getBearing();
+    position = Map.position;
+    mapBearing = Map._getBearing()
 
     // Plane handling
     // TODO: Implement as map layer instead of separated threejs scene
@@ -34,41 +36,41 @@ export const Renderer = (props: RendererProps) => {
     ThreeJS._rerender();
 
     // Task Handling
-    if (!props.Tasker.currentTask) {
-      props.Tasker.availableTasks.forEach((task) => {
-        const isInRange = Map._isInRange([position.lng, position.lat], task.coordinates, 300);
+    if (!Tasker.currentTask) {
+      Tasker.availableTasks.forEach((task) => {
+        const isInRange = MapboxGLMap._isInRange([position.lng, position.lat], task.coordinates, 100);
         if (isInRange) {
-          props.Tasker._beginTask(task.id)
-          if (props.Tasker.currentTask) {
-            const currentTaskStep = props.Tasker._getCurrentTaskActiveStep();
-            const nextDestination = props.Tasker.currentTask.steps[currentTaskStep].coordinates
+          Tasker._beginTask(task.id)
+          if (Tasker.currentTask) {
+            const currentTaskStep = Tasker._getCurrentTaskActiveStep();
+            const nextDestination = Tasker.currentTask.steps[currentTaskStep].coordinates
 
-            props.Map._removeMarkers(`img[${Tasker._markerType}]`);
-            const taskMarker= Tasker._createHTMLTaskMarker(Tasker._markerClassName, `${task.id}`);
-            props.Map._addMarker(taskMarker, nextDestination)
+            Map._removeMarkers(`img[${TaskerClass._markerType}]`);
+            const taskMarker= TaskerClass._createHTMLTaskMarker(TaskerClass._markerClassName, `${task.id}`);
+            Map._addMarker(taskMarker, nextDestination)
           }
         }
       })
     } else {
-      const currentTaskStep = props.Tasker._getCurrentTaskActiveStep();
-      const taskCords = props.Tasker.currentTask.steps[currentTaskStep].coordinates
+      const currentTaskStep = Tasker._getCurrentTaskActiveStep();
+      const taskCords = Tasker.currentTask.steps[currentTaskStep].coordinates
 
-      const isInRange = Map._isInRange([position.lng, position.lat], taskCords, 300);
+      const isInRange = MapboxGLMap._isInRange([position.lng, position.lat], taskCords, 100);
       if (isInRange) {
-        props.Map._removeMarkers(`img[${Tasker._markerType}="${props.Tasker.currentTask.id}"]`)
-        const isNextStep = props.Tasker._isNextTaskStepAvailable();
+        Map._removeMarkers(`img[${TaskerClass._markerType}="${Tasker.currentTask.id}"]`)
+        const isNextStep = Tasker._isNextTaskStepAvailable();
 
         if (isNextStep) {
-          props.Tasker._setNewStep();
-          const step = props.Tasker._getCurrentTaskActiveStep();
-          const id = props.Tasker.currentTask.id
-          const cords = props.Tasker.currentTask.steps[step].coordinates
-          props.Map._addMarker(Tasker._createHTMLTaskMarker(Tasker._markerClassName, `${id}`), cords)
+          Tasker._setNewStep();
+          const step = Tasker._getCurrentTaskActiveStep();
+          const id = Tasker.currentTask.id
+          const cords = Tasker.currentTask.steps[step].coordinates
+          Map._addMarker(TaskerClass._createHTMLTaskMarker(TaskerClass._markerClassName, `${id}`), cords)
         } else {
-          props.Tasker._taskCompleted()
+          Tasker._taskCompleted()
 
-          props.Tasker.availableTasks.forEach((task) => {
-            props.Map._addMarker(Tasker._createHTMLTaskMarker(Tasker._markerClassName, `${task.id}`), task.coordinates)
+          Tasker.availableTasks.forEach((task) => {
+            Map._addMarker(TaskerClass._createHTMLTaskMarker(TaskerClass._markerClassName, `${task.id}`), task.coordinates)
           })
         }
       }
@@ -104,9 +106,17 @@ export const Renderer = (props: RendererProps) => {
       </HeadsUpWrapper>
       <CompassWrapper>
       <CompassInnerWrapper>
-        <Compass deg={Map._getBearing()} />
+        <Compass deg={mapBearing} />
       </CompassInnerWrapper>
       </CompassWrapper>
+      { Tasker.currentTask && (
+        <DirectionArrowWrapper>
+          <DirectionArrow angle={MapboxGLMap._calculateAngleBetweenCoordinates(
+            [Map.position.lng, Map.position.lat], Tasker.currentTask.steps[Tasker.currentTask.activeStep].coordinates, mapBearing
+          )
+          } />
+        </DirectionArrowWrapper>
+      )}
     </Wrapper>
   );
 };
@@ -139,4 +149,12 @@ const CompassInnerWrapper = styled('div')`
   position: relative;
   top: -150px;
   right: -150px;
+`
+
+const DirectionArrowWrapper = styled('div')`
+  position: absolute;
+  z-index: 100;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
 `

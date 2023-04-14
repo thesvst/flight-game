@@ -6,8 +6,6 @@ AirSpaceElement.src = '/airspace.jpeg';
 AirSpaceElement.width = 60;
 AirSpaceElement.height = 60;
 
-export const maxZoom = 20;
-
 export const MAP_CONFIG: MapboxGLMapConfig = {
   mapOptions: {
     container: CONTAINER_ID,

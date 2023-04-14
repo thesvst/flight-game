@@ -163,9 +163,13 @@ export class MapboxGLMap {
     this._instance.addLayer(layer, 'waterway-label');
   }
 
-  public _isInRange(coordinates: [number, number], destinationCoordinates: [number, number], radius: number) {
+  static _isInRange(coordinates: [number, number], destinationCoordinates: [number, number], radius: number) {
     const buffer = turf.circle(destinationCoordinates, radius, {steps: 64, units: 'meters'});
     const point = turf.point(coordinates);
     return turf.booleanPointInPolygon(point, buffer)
+  }
+
+  static _calculateAngleBetweenCoordinates(coordinates: [number, number], destinationCoordinates: [number, number], bearing: number) {
+    return turf.bearing(turf.point(coordinates), turf.point(destinationCoordinates)) - bearing
   }
 }
