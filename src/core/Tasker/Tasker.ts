@@ -1,11 +1,12 @@
 import { Task } from './Tasker.types';
 
 export class Tasker {
+  readonly _markerType: string;
+  private readonly _markerClassName: string
+
   private _currentTask: Task | null = null;
   private _completedTasks: Task[] = [];
   private _availableTasks: Task[];
-  static _markerType = 'data-taskid';
-  static _markerClassName = 'task';
 
   get currentTask() {
     return this._currentTask;
@@ -15,17 +16,23 @@ export class Tasker {
     return this._availableTasks;
   }
 
-  constructor(tasks: Task[]) {
+  constructor(tasks: Task[], markerClassName: string, markerType: string) {
     this._availableTasks = tasks;
+    this._markerClassName = markerClassName
+    this._markerType = markerType;
   }
 
-  static _createHTMLTaskMarker(className: string, id: string) {
+  public _createHTMLTaskMarker(id: string) {
     const el = document.createElement('img');
     el.setAttribute(this._markerType, id);
     el.src = '/quest.png';
-    el.classList.add(className);
+    el.classList.add(this._markerClassName);
 
     return el;
+  }
+
+  private _validateCurrentTask() {
+    if (!this._currentTask) throw new Error(`There isn't any task activated`);
   }
 
   private _findAvailableTaskById(id: number) {
@@ -68,12 +75,16 @@ export class Tasker {
     this._currentTask = null;
   }
 
-  private _validateCurrentTask() {
-    if (!this._currentTask) throw new Error(`There isn't any task activated`);
-  }
-
   public _setNewStep() {
     this._validateCurrentTask()
     this._currentTask!.activeStep += 1!
+  }
+
+  public _getNextTaskStepCoordinates() {
+    this._validateCurrentTask()
+
+    const step = this._getCurrentTaskActiveStep();
+    return this.currentTask!.steps[step].coordinates
+
   }
 }

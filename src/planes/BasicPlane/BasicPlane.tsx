@@ -4,7 +4,7 @@ export class BasicPlane extends Plane {
   constructor() {
     const acceleration = 1;
     const agility = .4;
-    const maxVelocity = 259;
+    const maxVelocity = 1000;
     const modelPath = '/aircrafts/basic/scene.gltf';
 
     super(acceleration, agility, maxVelocity, modelPath);

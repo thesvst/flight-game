@@ -17,7 +17,7 @@ export const GameInitializer = () => {
     const PlaneObject = new BasicPlane();
     const MapObject = new MapboxGLMap(token, MAP_CONFIG);
     const ThreeJSObject = new ThreeJSManager(undefined, undefined, undefined, undefined, 'plane');
-    const TaskerObject = new Tasker(tasks);
+    const TaskerObject = new Tasker(tasks, 'task', 'datatask-id');
 
     PlaneObject.turnOnKeyboardControls();
     ThreeJSObject._loadGLTFModel(PlaneObject.modelPath);
@@ -26,7 +26,7 @@ export const GameInitializer = () => {
       () => {
         const rotation: [number, number, number] = [Math.PI / 2, 0, 0];
         TaskerObject.availableTasks.forEach((task) => {
-          MapObject._addMarker(Tasker._createHTMLTaskMarker(Tasker._markerClassName, `${task.id}`), task.coordinates);
+          MapObject._addMarker(TaskerObject._createHTMLTaskMarker(`${task.id}`), task.coordinates);
         });
       },
       () => {

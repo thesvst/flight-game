@@ -39,52 +39,53 @@ export const Renderer = (props: RendererProps) => {
     if (!Tasker.currentTask) {
       Tasker.availableTasks.forEach((task) => {
         const isInRange = MapboxGLMap._isInRange([position.lng, position.lat], task.coordinates, 100);
+
         if (isInRange) {
           Tasker._beginTask(task.id)
           if (Tasker.currentTask) {
-            const currentTaskStep = Tasker._getCurrentTaskActiveStep();
-            const nextDestination = Tasker.currentTask.steps[currentTaskStep].coordinates
+            const destination = Tasker._getNextTaskStepCoordinates()
+            const taskMarker = Tasker._createHTMLTaskMarker(`${task.id}`);
 
-            Map._removeMarkers(`img[${TaskerClass._markerType}]`);
-            const taskMarker= TaskerClass._createHTMLTaskMarker(TaskerClass._markerClassName, `${task.id}`);
-            Map._addMarker(taskMarker, nextDestination)
+            Map._removeMarkers(`img[${Tasker._markerType}]`);
+            Map._addMarker(taskMarker, destination)
           }
         }
       })
     } else {
-      const currentTaskStep = Tasker._getCurrentTaskActiveStep();
-      const taskCords = Tasker.currentTask.steps[currentTaskStep].coordinates
+      const destination = Tasker._getNextTaskStepCoordinates()
+      const isInRange = MapboxGLMap._isInRange([position.lng, position.lat], destination, 100);
 
-      const isInRange = MapboxGLMap._isInRange([position.lng, position.lat], taskCords, 100);
       if (isInRange) {
-        Map._removeMarkers(`img[${TaskerClass._markerType}="${Tasker.currentTask.id}"]`)
-        const isNextStep = Tasker._isNextTaskStepAvailable();
-
-        if (isNextStep) {
+        Map._removeMarkers(`img[${Tasker._markerType}="${Tasker.currentTask.id}"]`)
+        if (Tasker._isNextTaskStepAvailable()) {
           Tasker._setNewStep();
-          const step = Tasker._getCurrentTaskActiveStep();
           const id = Tasker.currentTask.id
-          const cords = Tasker.currentTask.steps[step].coordinates
-          Map._addMarker(TaskerClass._createHTMLTaskMarker(TaskerClass._markerClassName, `${id}`), cords)
+          const cords = Tasker._getNextTaskStepCoordinates()
+          const marker = Tasker._createHTMLTaskMarker(`${id}`)
+
+          Map._addMarker(marker, cords)
         } else {
           Tasker._taskCompleted()
-
-          Tasker.availableTasks.forEach((task) => {
-            Map._addMarker(TaskerClass._createHTMLTaskMarker(TaskerClass._markerClassName, `${task.id}`), task.coordinates)
+          Tasker.availableTasks.forEach(({ id, coordinates }) => {
+            const marker = Tasker._createHTMLTaskMarker(`${id}`)
+            Map._addMarker(marker, coordinates)
           })
         }
       }
     }
 
     // Map and values updates
-    Map._setBearing(mapBearing + planeBearing);
-    setVelocity(velocity);
-    setBearing(planeBearing);
     const timeFromLastFrame = (new Date().getTime() - LastFrameTime.getTime()) * 0.001;
     const newPos = Map._calculateNewPosition(mapBearing + planeBearing, timeFromLastFrame, velocity);
     const distanceTraveled = new mapboxgl.LngLat(...newPos).distanceTo(position);
+
+    Map._setBearing(mapBearing + planeBearing);
     Map._updateMapPosition(newPos);
+
+    setVelocity(velocity);
+    setBearing(planeBearing);
     addDistance(distanceTraveled);
+
     LastFrameTime = new Date();
     FramerRef.current = requestAnimationFrame(rerender);
   }
