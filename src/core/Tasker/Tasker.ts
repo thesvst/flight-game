@@ -1,5 +1,4 @@
 import { Task } from './Tasker.types';
-import mapboxgl from 'mapbox-gl';
 
 export class Tasker {
   readonly _markerType: string;
@@ -27,7 +26,7 @@ export class Tasker {
     this._markerType = markerType;
   }
 
-  public _createHTMLTaskMarker(id: string) {
+  public createHTMLTaskMarker(id: string) {
     const el = document.createElement('img');
     el.setAttribute(this._markerType, id);
     el.src = '/quest.png';
@@ -36,11 +35,11 @@ export class Tasker {
     return el;
   }
 
-  private _validateCurrentTask() {
+  private validateCurrentTask() {
     if (!this._currentTask) throw new Error(`There isn't any task activated`);
   }
 
-  private _findAvailableTaskById(id: number) {
+  private findAvailableTaskById(id: number) {
     const availableTask = this._availableTasks.find((item) => item.id === id);
 
     if (!availableTask) {
@@ -50,46 +49,46 @@ export class Tasker {
     return availableTask;
   }
 
-  public _beginTask(id: number) {
+  public beginTask(id: number) {
     if (this._currentTask !== null) {
       throw new Error(`More than one task at once are not supported.`);
     }
 
-    const currentTask = this._findAvailableTaskById(id);
+    const currentTask = this.findAvailableTaskById(id);
     this._currentTask = currentTask;
     this._availableTasks = this._availableTasks.filter((task) => task.id !== currentTask.id)
     this._currentTask.activeStep = 0;
   }
 
-  public _isNextTaskStepAvailable() {
-    this._validateCurrentTask()
+  public isNextTaskStepAvailable() {
+    this.validateCurrentTask()
 
     return this._currentTask!.activeStep < this._currentTask!.steps.length - 1
   }
 
-  public _getCurrentTaskActiveStep() {
-    this._validateCurrentTask()
+  public getCurrentTaskActiveStep() {
+    this.validateCurrentTask()
 
     return this._currentTask!.activeStep;
   }
 
-  public _taskCompleted() {
-    this._validateCurrentTask()
+  public taskCompleted() {
+    this.validateCurrentTask()
 
     this._completedTasks = [...this._completedTasks, this._currentTask!]
     this._availableTasks = this._availableTasks.filter((task) => task.id !== this._currentTask?.id)
     this._currentTask = null;
   }
 
-  public _setNewStep() {
-    this._validateCurrentTask()
+  public setNewStep() {
+    this.validateCurrentTask()
     this._currentTask!.activeStep += 1!
   }
 
-  public _getNextTaskStepCoordinates() {
-    this._validateCurrentTask()
+  public getNextTaskStepCoordinates() {
+    this.validateCurrentTask()
 
-    const step = this._getCurrentTaskActiveStep();
+    const step = this.getCurrentTaskActiveStep();
     return this.currentTask!.steps[step].coordinates
   }
 }

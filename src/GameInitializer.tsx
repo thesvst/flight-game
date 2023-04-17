@@ -20,21 +20,21 @@ export const GameInitializer = () => {
     const TaskerObject = new Tasker(tasks, 'task', 'datatask-id');
 
     PlaneObject.turnOnKeyboardControls();
-    ThreeJSObject._loadGLTFModel(PlaneObject.modelPath);
-    MapObject._onLoadCallbacks([
+    ThreeJSObject.loadGLTFModel(PlaneObject.modelPath);
+    MapObject.onLoadCallbacks([
       () => setMapLoaded(true),
       () => {
         const rotation: [number, number, number] = [Math.PI / 2, 0, 0];
         TaskerObject.availableTasks.forEach((task) => {
-          MapObject._addMarker(TaskerObject._createHTMLTaskMarker(`${task.id}`), task.coordinates);
+          MapObject.addMarker(TaskerObject.createHTMLTaskMarker(`${task.id}`), task.coordinates);
         });
       },
       () => {
-        MapObject._addMarker(AirSpaceElement, AirspaceIntelligenceGdanskCords);
+        MapObject.addMarker(AirSpaceElement, AirspaceIntelligenceGdanskCords);
       },
     ]);
 
-    window.addEventListener('resize', () => ThreeJSObject._onWindowResize());
+    window.addEventListener('resize', () => ThreeJSObject.onWindowResize());
 
     Plane.current = PlaneObject;
     ThreeJS.current = ThreeJSObject;

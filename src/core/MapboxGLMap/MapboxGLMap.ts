@@ -20,21 +20,17 @@ export class MapboxGLMap {
     return this._instance.getCenter();
   }
 
-  get zoom() {
-    return this._instance.getZoom();
-  }
-
   constructor(accessToken: string, config: MapboxGLMapConfig) {
     mapboxgl.accessToken = accessToken;
     this._config = config;
     this._instance = new mapboxgl.Map(this._config.mapOptions);
 
     this._instance.on('load', () => {
-      this._init();
+      this.init();
     });
   }
 
-  public _onLoadCallbacks(callbacks: (() => void)[]) {
+  public onLoadCallbacks(callbacks: (() => void)[]) {
     this._instance.on('load', () => {
       callbacks.forEach((callback) => {
         callback();
@@ -42,36 +38,32 @@ export class MapboxGLMap {
     });
   }
 
-  public _init() {
+  public init() {
     this._instance.addControl(
       new mapboxgl.AttributionControl({
         customAttribution: 'Welcome on board ~thesvst :)',
       }),
     );
-    this._initiateThreeJSManager();
+    this.initiateThreeJSManager();
   }
 
-  public _updateMapPosition(lngLat: [number, number]) {
+  public updateMapPosition(lngLat: [number, number]) {
     this._instance.flyTo({ center: lngLat, animate: false });
   }
 
-  public _setBearing(bearing: number) {
+  public setBearing(bearing: number) {
     this._instance.setBearing(bearing);
   }
 
-  public _getBearing() {
+  public getBearing() {
     return this._instance.getBearing();
   }
 
-  public _setZoom(zoom: number) {
-    this._instance.setZoom(zoom);
-  }
-
-  public _addMarker(element: HTMLElement, cords: LngLatLike) {
+  public addMarker(element: HTMLElement, cords: LngLatLike) {
     new mapboxgl.Marker(element).setLngLat(cords).addTo(this._instance);
   }
 
-  public _calculateNewPosition(bearing: number, time: number, velocity: number): [number, number] {
+  public calculateNewPosition(bearing: number, time: number, velocity: number): [number, number] {
     const bearingRad = UnitsConverter.degreesToRadians(bearing);
     const distance = UnitsConverter.KmhToMs(velocity) * time;
     const newLng = this.position.lng + (distance / 111111) * Math.sin(bearingRad);
@@ -80,7 +72,7 @@ export class MapboxGLMap {
     return [newLng, newLat];
   }
 
-  public _removeMarkers(selector: string) {
+  public removeMarkers(selector: string) {
     if (selector) {
       const elements = document.querySelectorAll(selector);
       if (elements.length === 0) throw new Error(`None markers with selector ${selector} found.`)
@@ -93,7 +85,7 @@ export class MapboxGLMap {
     }
   }
 
-  private _initiateThreeJSManager() {
+  private initiateThreeJSManager() {
     this._ThreeJSManager = new ThreeJSManager(
       undefined,
       new THREE.DirectionalLight(0xffffff),
@@ -104,7 +96,7 @@ export class MapboxGLMap {
   }
 
   // TODO: Add something fun to a map
-  public _render3DModelOnMap(
+  public render3DModelOnMap(
     position: LngLatLike,
     altitude: number,
     rotate: [number, number, number],
@@ -128,7 +120,7 @@ export class MapboxGLMap {
       type: 'custom',
       renderingMode: '3d',
       onAdd: (map, gl) => {
-        this._ThreeJSManager?._loadGLTFModel(modelPath, scale);
+        this._ThreeJSManager?.loadGLTFModel(modelPath, scale);
         this._instance = map;
 
         const newRenderer = new THREE.WebGLRenderer({
@@ -138,7 +130,7 @@ export class MapboxGLMap {
         });
         newRenderer.autoClear = false;
 
-        this._ThreeJSManager?._setRenderer(newRenderer);
+        this._ThreeJSManager?.setRenderer(newRenderer);
       },
       render: (_, matrix) => {
         const rotationX = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), modelTransform.rotateX);
@@ -153,9 +145,9 @@ export class MapboxGLMap {
           .multiply(rotationY)
           .multiply(rotationZ);
 
-        this._ThreeJSManager?._setCameraProjectionMatrix(m.multiply(l));
-        this._ThreeJSManager?._resetRendererState();
-        this._ThreeJSManager?._rerender();
+        this._ThreeJSManager?.setCameraProjectionMatrix(m.multiply(l));
+        this._ThreeJSManager?.resetRendererState();
+        this._ThreeJSManager?.rerender();
         this._instance.triggerRepaint();
       },
     };
@@ -163,17 +155,17 @@ export class MapboxGLMap {
     this._instance.addLayer(layer, 'waterway-label');
   }
 
-  static _isInRange(coordinates: [number, number], destinationCoordinates: [number, number], radius: number) {
+  static isInRange(coordinates: [number, number], destinationCoordinates: [number, number], radius: number) {
     const buffer = turf.circle(destinationCoordinates, radius, {steps: 64, units: 'meters'});
     const point = turf.point(coordinates);
     return turf.booleanPointInPolygon(point, buffer)
   }
 
-  static _calculateAngleBetweenCoordinates(coordinates: [number, number], destinationCoordinates: [number, number], bearing: number) {
+  static calculateAngleBetweenCoordinates(coordinates: [number, number], destinationCoordinates: [number, number], bearing: number) {
     return turf.bearing(turf.point(coordinates), turf.point(destinationCoordinates)) - bearing
   }
 
-  static _calculateArrivalTime(coordinates: [number, number], destinationCoordinates: [number, number], velocity: number) {
+  static calculateArrivalTime(coordinates: [number, number], destinationCoordinates: [number, number], velocity: number) {
     const currentMercatorCoords = mapboxgl.MercatorCoordinate.fromLngLat(coordinates).toLngLat();
     const destMercatorCoords = mapboxgl.MercatorCoordinate.fromLngLat(destinationCoordinates).toLngLat();
 

@@ -21,7 +21,7 @@ export const Renderer = (props: RendererProps) => {
   const { ThreeJS, Map, Plane, Tasker } = props;
   let LastFrameTime = new Date();
 
-  let mapBearing = Map._getBearing()
+  let mapBearing = Map.getBearing()
   let position = Map.position
   let estimatedArrival: EstimatedArrival = null;
   let positionAsNumArr: [number, number] = [position.lng, position.lat]
@@ -32,13 +32,13 @@ export const Renderer = (props: RendererProps) => {
     const planeBearing = Plane.bearing;
     position = Map.position;
     positionAsNumArr = [position.lng, position.lat]
-    mapBearing = Map._getBearing()
+    mapBearing = Map.getBearing()
 
 
     // Plane handling
     // TODO: Implement as map layer instead of separated threejs scene
-    ThreeJS._changeModelRotation({ x: 10, y: 0, z: planeBearing * 3 });
-    ThreeJS._rerender();
+    ThreeJS.changeModelRotation({ x: 10, y: 0, z: planeBearing * 3 });
+    ThreeJS.rerender();
 
     // Task Handling
     if (!Tasker.currentTask) {
@@ -46,39 +46,39 @@ export const Renderer = (props: RendererProps) => {
       setEstimatedArrival(null);
 
       Tasker.availableTasks.forEach((task) => {
-        const isInRange = MapboxGLMap._isInRange(positionAsNumArr, task.coordinates, 100);
+        const isInRange = MapboxGLMap.isInRange(positionAsNumArr, task.coordinates, 100);
 
         if (isInRange) {
-          Tasker._beginTask(task.id)
+          Tasker.beginTask(task.id)
           if (Tasker.currentTask) {
-            const destination = Tasker._getNextTaskStepCoordinates()
-            const taskMarker = Tasker._createHTMLTaskMarker(`${task.id}`);
+            const destination = Tasker.getNextTaskStepCoordinates()
+            const taskMarker = Tasker.createHTMLTaskMarker(`${task.id}`);
 
-            Map._removeMarkers(`img[${Tasker._markerType}]`);
-            Map._addMarker(taskMarker, destination)
+            Map.removeMarkers(`img[${Tasker._markerType}]`);
+            Map.addMarker(taskMarker, destination)
           }
         }
       })
     } else {
-      const destination = Tasker._getNextTaskStepCoordinates()
-      const isInRange = MapboxGLMap._isInRange(positionAsNumArr, destination, 100);
+      const destination = Tasker.getNextTaskStepCoordinates()
+      const isInRange = MapboxGLMap.isInRange(positionAsNumArr, destination, 100);
       const velocityInMS = UnitsConverter.KmhToMs(velocity);
-      estimatedArrival = MapboxGLMap._calculateArrivalTime(positionAsNumArr, destination, velocityInMS);
+      estimatedArrival = MapboxGLMap.calculateArrivalTime(positionAsNumArr, destination, velocityInMS);
 
       if (isInRange) {
-        Map._removeMarkers(`img[${Tasker._markerType}="${Tasker.currentTask.id}"]`)
-        if (Tasker._isNextTaskStepAvailable()) {
-          Tasker._setNewStep();
+        Map.removeMarkers(`img[${Tasker._markerType}="${Tasker.currentTask.id}"]`)
+        if (Tasker.isNextTaskStepAvailable()) {
+          Tasker.setNewStep();
           const id = Tasker.currentTask.id
-          const cords = Tasker._getNextTaskStepCoordinates()
-          const marker = Tasker._createHTMLTaskMarker(`${id}`)
+          const cords = Tasker.getNextTaskStepCoordinates()
+          const marker = Tasker.createHTMLTaskMarker(`${id}`)
 
-          Map._addMarker(marker, cords)
+          Map.addMarker(marker, cords)
         } else {
-          Tasker._taskCompleted()
+          Tasker.taskCompleted()
           Tasker.availableTasks.forEach(({ id, coordinates }) => {
-            const marker = Tasker._createHTMLTaskMarker(`${id}`)
-            Map._addMarker(marker, coordinates)
+            const marker = Tasker.createHTMLTaskMarker(`${id}`)
+            Map.addMarker(marker, coordinates)
           })
 
           setAvailableTasks(Tasker.availableTasks)
@@ -90,11 +90,11 @@ export const Renderer = (props: RendererProps) => {
 
     // Map and values updates
     const timeFromLastFrame = (new Date().getTime() - LastFrameTime.getTime()) * 0.001;
-    const newPos = Map._calculateNewPosition(mapBearing + planeBearing, timeFromLastFrame, velocity);
+    const newPos = Map.calculateNewPosition(mapBearing + planeBearing, timeFromLastFrame, velocity);
     const distanceTraveled = new mapboxgl.LngLat(...newPos).distanceTo(position);
 
-    Map._setBearing(mapBearing + planeBearing);
-    Map._updateMapPosition(newPos);
+    Map.setBearing(mapBearing + planeBearing);
+    Map.updateMapPosition(newPos);
 
     if (store.velocity !== velocity) setVelocity(velocity);
     if (store.bearing !== planeBearing) setBearing(planeBearing);
@@ -136,7 +136,7 @@ export const Renderer = (props: RendererProps) => {
       { Tasker.currentTask && (
         <DirectionArrowWrapper>
           <DirectionArrow
-            angle={MapboxGLMap._calculateAngleBetweenCoordinates(positionAsNumArr, Tasker._getNextTaskStepCoordinates(), mapBearing)}
+            angle={MapboxGLMap.calculateAngleBetweenCoordinates(positionAsNumArr, Tasker.getNextTaskStepCoordinates(), mapBearing)}
           />
         </DirectionArrowWrapper>
       )}

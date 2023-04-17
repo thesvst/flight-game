@@ -3,10 +3,10 @@ import { Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 export class ThreeJSManager {
-  private _scene;
-  private _light;
+  private readonly _scene;
+  private readonly _light;
   private _renderer;
-  private _camera;
+  private readonly _camera;
   private _model: THREE.Group | undefined;
   private _GLTFLoader = new GLTFLoader();
   private readonly _DOMElementID: string;
@@ -48,40 +48,40 @@ export class ThreeJSManager {
       this._camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 1000);
     }
 
-    this._initialize();
+    this.initialize();
   }
 
-  public _setRenderer(renderer: THREE.WebGLRenderer) {
+  public setRenderer(renderer: THREE.WebGLRenderer) {
     this._renderer = renderer;
   }
 
-  public _setCameraProjectionMatrix(matrix: THREE.Matrix4) {
+  public setCameraProjectionMatrix(matrix: THREE.Matrix4) {
     this._camera.projectionMatrix = matrix;
   }
 
-  public _resetRendererState() {
+  public resetRendererState() {
     this._renderer.resetState();
   }
 
-  public _rerender() {
+  public rerender() {
     this._renderer.render(this._scene, this._camera);
   }
 
-  private _setRendererSize() {
+  private setRendererSize() {
     this._renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  private _setCameraSize() {
+  private setCameraSize() {
     this._camera.aspect = window.innerWidth / window.innerHeight;
     this._camera.updateProjectionMatrix();
-    this._rerender;
+    this.rerender;
   }
 
-  private _initialize() {
+  private initialize() {
     const container = document.getElementById(this._DOMElementID);
 
     if (container) {
-      this._setRendererSize();
+      this.setRendererSize();
       this._scene.add(this._light);
       const domElement = this._renderer.domElement;
       domElement.style.position = 'absolute';
@@ -95,7 +95,7 @@ export class ThreeJSManager {
     }
   }
 
-  public _loadGLTFModel(path: string, scale?: number) {
+  public loadGLTFModel(path: string, scale?: number) {
     this._GLTFLoader.load(path, (gltf) => {
       if (scale) {
         gltf.scene.children[0].scale.multiplyScalar(scale);
@@ -105,7 +105,7 @@ export class ThreeJSManager {
     });
   }
 
-  public _changeModelRotation(rotation: Pick<Vector3, 'x' | 'y' | 'z'>) {
+  public changeModelRotation(rotation: Pick<Vector3, 'x' | 'y' | 'z'>) {
     if (this._model) {
       this._model.rotation.x = rotation.x;
       this._model.rotation.y = rotation.y;
@@ -115,8 +115,8 @@ export class ThreeJSManager {
     }
   }
 
-  public _onWindowResize() {
-    this._setRendererSize();
-    this._setCameraSize();
+  public onWindowResize() {
+    this.setRendererSize();
+    this.setCameraSize();
   }
 }
