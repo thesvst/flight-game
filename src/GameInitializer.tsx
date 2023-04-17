@@ -24,7 +24,6 @@ export const GameInitializer = () => {
     MapObject.onLoadCallbacks([
       () => setMapLoaded(true),
       () => {
-        const rotation: [number, number, number] = [Math.PI / 2, 0, 0];
         TaskerObject.availableTasks.forEach((task) => {
           MapObject.addMarker(TaskerObject.createHTMLTaskMarker(`${task.id}`), task.coordinates);
         });
@@ -48,7 +47,7 @@ export const GameInitializer = () => {
 
       Plane.current?.turnOffKeyboardControls();
 
-      if (ThreeJS.current) window.removeEventListener('resize', ThreeJS.current._onWindowResize);
+      if (ThreeJS.current) window.removeEventListener('resize', ThreeJS.current.onWindowResize);
 
       ThreeJS.current = undefined;
       Plane.current = undefined;
@@ -58,6 +57,7 @@ export const GameInitializer = () => {
       if (MapParentElement) MapParentElement.innerHTML = '';
       if (ThreeJSDomElement) ThreeJSDomElement.innerHTML = '';
       if (MapThreeJSDOMElement) MapThreeJSDOMElement.innerHTML = '';
+
     };
   }, []);
 

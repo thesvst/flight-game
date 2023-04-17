@@ -29,6 +29,7 @@ export const Renderer = (props: RendererProps) => {
   function rerender() {
     Plane.planeMovementFraming();
     const velocity = Plane.velocity;
+    const a = 'a'
     const planeBearing = Plane.bearing;
     position = Map.position;
     positionAsNumArr = [position.lng, position.lat]

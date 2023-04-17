@@ -74,7 +74,7 @@ export class ThreeJSManager {
   private setCameraSize() {
     this._camera.aspect = window.innerWidth / window.innerHeight;
     this._camera.updateProjectionMatrix();
-    this.rerender;
+    this.rerender();
   }
 
   private initialize() {
