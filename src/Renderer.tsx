@@ -25,11 +25,13 @@ export const Renderer = (props: RendererProps) => {
   let position = Map.position
   let estimatedArrival: EstimatedArrival = null;
   let positionAsNumArr: [number, number] = [position.lng, position.lat]
+  let controlsState = Plane.getControlsState();
 
   function rerender() {
+    FramerRef.current = requestAnimationFrame(rerender);
     Plane.planeMovementFraming();
+    controlsState = Plane.getControlsState();
     const velocity = Plane.velocity;
-    const a = 'a'
     const planeBearing = Plane.bearing;
     position = Map.position;
     positionAsNumArr = [position.lng, position.lat]
@@ -108,7 +110,6 @@ export const Renderer = (props: RendererProps) => {
     if (estimatedArrival) setEstimatedArrival(Math.round(estimatedArrival))
 
     LastFrameTime = new Date();
-    FramerRef.current = requestAnimationFrame(rerender);
   }
 
   useEffect(() => {
@@ -126,6 +127,13 @@ export const Renderer = (props: RendererProps) => {
       <HeadsUpWrapper>
         <HeadsUp />
       </HeadsUpWrapper>
+      <GuideWrapper>
+        {/*{ TODO: Move to separated component */}
+        <div><Control active={controlsState.w}>W</Control> - increase speed</div>
+        <div><Control active={controlsState.s}>S</Control> - decrease speed</div>
+        <div><Control active={controlsState.ArrowLeft}>ArrowLeft</Control> - turn left</div>
+        <div><Control active={controlsState.ArrowRight}>ArrowRight</Control> - turn right</div>
+      </GuideWrapper>
       <QuestLogWrapper>
         <QuestLog />
       </QuestLogWrapper>
@@ -154,6 +162,26 @@ const HeadsUpWrapper = styled('div')`
   backdrop-filter: blur(5px);
   border: 1px solid #ccc;
 `;
+
+const GuideWrapper = styled('div')`
+  position: absolute;
+  backdrop-filter: blur(5px);
+  border: 1px solid #ccc;
+  width: 300px;
+  top: 210px;
+  left: 5px;
+  color: #fff;
+  padding: 5px;
+  box-sizing: border-box;
+  > div {
+    display: flex;
+  }
+`
+
+const Control = styled('div')<{ active: boolean }>`
+  width: 100px;
+  color: ${(props: { active: boolean }) => props.active ? 'red' : '#fff'}
+`
 
 const Wrapper = styled('div')`
   width: 100vw;

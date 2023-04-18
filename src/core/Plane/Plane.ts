@@ -22,12 +22,21 @@ export class Plane {
     return this._modelPath;
   }
 
-  private controls: { [key in KeyboardEvent['key']]: { pressed: boolean; action: () => void } } = {
+  private _controls: { [key in KeyboardEvent['key']]: { pressed: boolean; action: () => void } } = {
     ArrowLeft: { pressed: false, action: () => this.changeBearing('WEST') },
     ArrowRight: { pressed: false, action: () => this.changeBearing('EAST') },
     w: { pressed: false, action: () => this.increaseVelocity() },
     s: { pressed: false, action: () => this.decreaseVelocity() },
   };
+
+  public getControlsState() {
+    return {
+      ArrowLeft: this._controls.ArrowLeft.pressed,
+      ArrowRight: this._controls.ArrowRight.pressed,
+      w: this._controls.w.pressed,
+      s: this._controls.s.pressed,
+    }
+  }
 
   constructor(acceleration: number, agility: number, maxVelocity: number, modelPath: string) {
     this._acceleration = acceleration;
@@ -56,11 +65,9 @@ export class Plane {
 
   private changeBearing(bearing: 'WEST' | 'EAST') {
     if (bearing === 'WEST' && this._bearing > -2 / 5) {
-      const updatedBearing = this._bearing - this._agility * 0.005;
-      this._bearing = updatedBearing;
+      this._bearing = this._bearing - this._agility * 0.005;
     } else if (bearing === 'EAST' && this._bearing < 2 / 5) {
-      const updatedBearing = this._bearing + this._agility * 0.005;
-      this._bearing = updatedBearing;
+      this._bearing = this._bearing + this._agility * 0.005;
     }
   }
 
@@ -68,19 +75,19 @@ export class Plane {
     window.removeEventListener('keydown', this.onKeyDownListener);
     window.removeEventListener('keyup', this.onKeyUpListener);
 
-    Object.keys(this.controls).forEach((key) => {
-      this.controls[key].pressed = false;
+    Object.keys(this._controls).forEach((key) => {
+      this._controls[key].pressed = false;
     });
   }
 
   private onKeyUpListener(e: KeyboardEvent) {
     e.preventDefault();
-    if (this.controls[e.key]) this.controls[e.key].pressed = false;
+    if (this._controls[e.key]) this._controls[e.key].pressed = false;
   }
 
   private onKeyDownListener(e: KeyboardEvent) {
     e.preventDefault();
-    if (this.controls[e.key]) this.controls[e.key].pressed = true;
+    if (this._controls[e.key]) this._controls[e.key].pressed = true;
   }
 
   public turnOnKeyboardControls() {
@@ -89,8 +96,8 @@ export class Plane {
   }
 
   public planeMovementFraming() {
-    return Object.keys(this.controls).forEach((key) => {
-      this.controls[key].pressed && this.controls[key].action();
+    return Object.keys(this._controls).forEach((key) => {
+      this._controls[key].pressed && this._controls[key].action();
     });
   }
 }

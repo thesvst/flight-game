@@ -15,11 +15,11 @@ export const MAP_CONFIG: MapboxGLMapConfig = {
     bearing: 0,
     pitch: 0,
     interactive: false,
-    antialias: true,
+    antialias: false,
     attributionControl: false,
     style: 'mapbox://styles/mapbox/satellite-streets-v12',
     logoPosition: 'top-right',
-    optimizeForTerrain: false,
+    optimizeForTerrain: true,
   },
   mapboxDem: {
     type: 'raster-dem',
